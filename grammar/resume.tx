@@ -1,0 +1,3 @@
+// textX grammar of the ResumeLens candidate profile DSL.
+// EBNF specification: docs/grammar.md
+// Metamodel:          docs/metamodel.md
