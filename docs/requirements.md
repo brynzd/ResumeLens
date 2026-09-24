@@ -1,4 +1,4 @@
-# Requeriments
+# Requirements
 
 - FR-01 The system shall accept a résumé as plain text (file or pasted text).
 
@@ -46,4 +46,4 @@
 
 - FR-23 The system shall provide a UI to load a résumé, run the pipeline, and display each stage's output: extracted strings, normalized tokens, sorted sequence, per-profile result, DSL document, and visualization.
 
-FR-24 The system shall include automated tests for each stage, covering the two reference résumés, positive and negative cases per profile, and invalid DSL documents.
+- FR-24 The system shall include automated tests for each stage, covering the two reference résumés, positive and negative cases per profile, and invalid DSL documents.
