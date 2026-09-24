@@ -1,3 +1,38 @@
+CandidateProfile ::= "candidate" STRING "{" Header Contact Skills [Languages]
+                     Experiences Education Classification "}" ;
+
+Header           ::= "headline" ":" STRING ";"
+                     "location" ":" STRING ";"
+                     [ "summary" ":" STRING ";" ] ;
+
+Contact          ::= "contact" "{" [ "email" ":" EMAIL ";" ]
+                                   [ "phone" ":" PHONE ";" ]
+                                   [ "linkedin" ":" URL ";" ] "}" ;
+
+Skills           ::= "skills" "{" Qualification { "," Qualification } "}" ;
+Qualification    ::= CANON ;
+
+Languages        ::= "languages" "{" Language { Language } "}" ;
+Language         ::= STRING ":" Level ";" ;
+Level            ::= "native" | "full_professional" | "professional" | "basic" ;
+
+Experiences      ::= "experience" "{" Experience { Experience } "}" ;
+Experience       ::= "role" STRING "at" STRING Period [ "in" STRING ]
+                     [ "{" Task { Task } "}" ] ;
+Task             ::= "-" STRING ;
+Period           ::= "from" DATE "to" ( DATE | "present" ) ;
+
+Education        ::= "education" "{" Degree { Degree } "}" ;
+Degree           ::= STRING "at" STRING Period ";" ;
+
+Classification   ::= "classification" "{" Result { Result } "}" ;
+Result           ::= Profile "->" Verdict ";" ;
+Profile          ::= "FULL_STACK_DEVELOPER" | "MACHINE_LEARNING_ENGINEER"
+                   | "FRONTEND_DEVELOPER" | "DATA_ENGINEER" ;
+Verdict          ::= "ACCEPTED" | "REJECTED" ;
+
+
+
 // textX grammar of the ResumeLens candidate profile DSL.
 // EBNF specification: docs/grammar.md
 // Metamodel:          docs/metamodel.md
