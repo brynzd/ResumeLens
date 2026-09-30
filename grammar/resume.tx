@@ -62,7 +62,11 @@ Task:
 ;
 
 Period:
-    'from' start=DATE 'to' (end=DATE | end='present')
+    'from' start=DATE 'to' end=EndDate
+;
+
+EndDate:
+    DATE | 'present'
 ;
 
 Education:
@@ -82,8 +86,11 @@ Result:
 ;
 
 Profile:
-    'FULL_STACK_DEVELOPER' | 'MACHINE_LEARNING_ENGINEER'
-    | 'FRONTEND_DEVELOPER' | 'DATA_ENGINEER'
+    'FULL_STACK_DEVELOPER'
+    | 'MACHINE_LEARNING_ENGINEER'
+    | 'FRONTEND_DEVELOPER'
+    | 'DATA_ENGINEER'
+    | 'UNQUALIFIED'
 ;
 
 Verdict:
@@ -96,3 +103,8 @@ PHONE: /\+?[0-9][0-9 ()-]{6,}[0-9]/;
 URL: /https?:\/\/[A-Za-z0-9\-._~:\/?#@!$&'()*+=%]+/;
 DATE: /\d{4}-\d{2}(-\d{2})?/;
 CANON: /[A-Z][A-Z0-9_]*/;
+
+// Ignorar comentarios estilo C++ / Java en archivos .dsl
+Comment:
+    /\/\/.*$/ | /\/\*[\s\S]*?\*\//
+;
