@@ -1,0 +1,33 @@
+// Reference résumé 1 (Integrative Task 1, Full Stack Developer profile) — Wednesday Addams.
+candidate "Wednesday Addams" {
+    headline: "Full Stack Developer";
+    location: "Jericho, Vermont";
+    summary: "Investigative software developer with a taste for the macabre.";
+
+    contact {
+        email: wednesday@nevermore.edu;
+        linkedin: https://linkedin.com/in/wednesday-addams;
+    }
+
+    skills {
+        JAVASCRIPT, REACT, NODE_JS, POSTGRESQL, GIT
+    }
+
+    experience {
+        role "Investigative Software Developer" at "Nevermore Academy" from 2022-08 to present {
+            - "Developed data analysis tools to investigate unusual events around Nevermore."
+            - "Built REST APIs and a React front end for the academy's incident tracker."
+        }
+    }
+
+    education {
+        "Specialization in supernatural investigations" at "Nevermore Academy" from 2018-08 to 2022-05;
+    }
+
+    classification {
+        FULL_STACK_DEVELOPER -> ACCEPTED;
+        MACHINE_LEARNING_ENGINEER -> REJECTED;
+        FRONTEND_DEVELOPER -> REJECTED;
+        DATA_ENGINEER -> REJECTED;
+    }
+}

@@ -1,0 +1,110 @@
+// textX grammar of the ResumeLens candidate profile DSL.
+// EBNF specification: docs/grammar.md
+// Metamodel:          docs/metamodel.md
+
+CandidateProfile:
+    'candidate' name=STRING '{'
+        header=Header
+        contact=Contact
+        skills=Skills
+        languages=Languages?
+        experiences=Experiences
+        education=Education
+        classification=Classification
+    '}'
+;
+
+Header:
+    'headline' ':' headline=STRING ';'
+    'location' ':' location=STRING ';'
+    ('summary' ':' summary=STRING ';')?
+;
+
+Contact:
+    'contact' '{'
+        ('email' ':' email=EMAIL ';')?
+        ('phone' ':' phone=PHONE ';')?
+        ('linkedin' ':' linkedin=URL ';')?
+    '}'
+;
+
+Skills:
+    'skills' '{' items+=Qualification[','] '}'
+;
+
+Qualification:
+    CANON
+;
+
+Languages:
+    'languages' '{' items+=Language '}'
+;
+
+Language:
+    name=STRING ':' level=Level ';'
+;
+
+Level:
+    'native' | 'full_professional' | 'professional' | 'basic'
+;
+
+Experiences:
+    'experience' '{' items+=Experience '}'
+;
+
+Experience:
+    'role' role=STRING 'at' company=STRING period=Period ('in' location=STRING)?
+    ('{' tasks+=Task '}')?
+;
+
+Task:
+    '-' description=STRING
+;
+
+Period:
+    'from' start=DATE 'to' end=EndDate
+;
+
+EndDate:
+    DATE | 'present'
+;
+
+Education:
+    'education' '{' items+=Degree '}'
+;
+
+Degree:
+    degree=STRING 'at' institution=STRING period=Period ';'
+;
+
+Classification:
+    'classification' '{' items+=Result '}'
+;
+
+Result:
+    profile=Profile '->' verdict=Verdict ';'
+;
+
+Profile:
+    'FULL_STACK_DEVELOPER'
+    | 'MACHINE_LEARNING_ENGINEER'
+    | 'FRONTEND_DEVELOPER'
+    | 'DATA_ENGINEER'
+    | 'UNQUALIFIED'
+;
+
+Verdict:
+    'ACCEPTED' | 'REJECTED'
+;
+
+// --- Lexical terminals (match rules) ---
+EMAIL: /[A-Za-z0-9_.+-]+@[A-Za-z0-9-]+\.[A-Za-z0-9.-]+/;
+PHONE: /\+?[0-9][0-9 ()-]{6,}[0-9]/;
+URL: /https?:\/\/[A-Za-z0-9\-._~:\/?#@!$&'()*+=%]+/;
+DATE: /\d{4}-\d{2}(-\d{2})?/;
+CANON: /[A-Z][A-Z0-9_]*/;
+
+// Ignorar comentarios estilo C++ / Java en archivos .dsl
+Comment:
+    /\/\/.*$/ | /\/\*[\s\S]*?\*\//
+;
