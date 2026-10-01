@@ -27,7 +27,7 @@ candidate "Wednesday Addams" {
     classification {
         FULL_STACK_DEVELOPER -> ACCEPTED;
         MACHINE_LEARNING_ENGINEER -> REJECTED;
-        FRONTEND_DEVELOPER -> ACCEPTED;
+        FRONTEND_DEVELOPER -> REJECTED;
         DATA_ENGINEER -> REJECTED;
     }
 }
