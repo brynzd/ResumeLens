@@ -1,1 +1,5 @@
+# Python packages (pip install -r requirements.txt)
 textX==4.4.0
+
+# Also required, but NOT pip-installable (system program, used to render
+# the .dot diagrams to PNG): Graphviz -> https://graphviz.org/download/
