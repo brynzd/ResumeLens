@@ -1,0 +1,49 @@
+// VALID - full profile: every optional part of the language (summary, the three
+// contact fields, languages, several experiences and degrees, locations, tasks,
+// full dates, a one-month period and a block comment).
+candidate "Lisa Simpson" {
+    headline: "Data Engineer";
+    location: "Springfield, Oregon";
+    summary: "Engineer who builds batch and streaming data pipelines.";
+
+    contact {
+        email: lisa.simpson@springfield.edu;
+        phone: +1 541 555 0199;
+        linkedin: https://linkedin.com/in/lisa-simpson-springfield;
+    }
+
+    skills {
+        PYTHON, SPARK, AIRFLOW, POSTGRESQL, GIT
+    }
+
+    languages {
+        "English": native;
+        "Spanish": full_professional;
+        "French": professional;
+        "Portuguese": basic;
+    }
+
+    experience {
+        role "Data Engineer" at "Springfield Nuclear Plant" from 2023-02-01 to present in "Springfield" {
+            - "Built Airflow pipelines that load sensor data into PostgreSQL."
+            - "Migrated nightly batch jobs from cron scripts to Spark."
+        }
+        role "Data Analyst" at "Kwik-E-Mart" from 2020-06 to 2023-01 in "Springfield" {
+            - "Automated weekly sales reports with Python."
+        }
+        /* One-month internship: the period starts and ends in the same month. */
+        role "Summer Intern" at "Springfield Elementary" from 2019-06-01 to 2019-06-30
+    }
+
+    education {
+        "M.Sc. in Data Science" at "Springfield University" from 2018-08 to 2020-05;
+        "B.Sc. in Computer Science" at "Springfield University" from 2014-08 to 2018-05;
+    }
+
+    classification {
+        FULL_STACK_DEVELOPER -> REJECTED;
+        MACHINE_LEARNING_ENGINEER -> REJECTED;
+        FRONTEND_DEVELOPER -> REJECTED;
+        DATA_ENGINEER -> ACCEPTED;
+    }
+}

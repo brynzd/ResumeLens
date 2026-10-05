@@ -1,0 +1,24 @@
+// INVALID - syntax (malformed structure): the candidate block is never closed.
+candidate "Wednesday Addams" {
+    headline: "Full Stack Developer";
+    location: "Jericho, Vermont";
+
+    contact {
+        email: wednesday@nevermore.edu;
+    }
+
+    skills {
+        JAVASCRIPT, REACT, NODE_JS, POSTGRESQL, GIT
+    }
+
+    experience {
+        role "Software Developer" at "Nevermore Academy" from 2022-08 to present
+    }
+
+    education {
+        "B.Sc. in Computer Science" at "Nevermore Academy" from 2018-08 to 2022-05;
+    }
+
+    classification {
+        FULL_STACK_DEVELOPER -> ACCEPTED;
+    }

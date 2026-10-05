@@ -1,0 +1,5 @@
+// INVALID - syntax (incomplete candidate profile): only the header is present.
+candidate "Wednesday Addams" {
+    headline: "Full Stack Developer";
+    location: "Jericho, Vermont";
+}

@@ -1,0 +1,32 @@
+// VALID - unqualified candidate: a single skill, contact by phone only, and every
+// profile rejected, so the classification marks the candidate as UNQUALIFIED.
+candidate "Bart Simpson" {
+    headline: "Junior Developer";
+    location: "Springfield, Oregon";
+
+    contact {
+        phone: +1 541 555 0142;
+    }
+
+    skills {
+        GIT
+    }
+
+    experience {
+        role "IT Assistant" at "Springfield Elementary" from 2024-09 to present {
+            - "Kept the school's shared repositories organized."
+        }
+    }
+
+    education {
+        "High School Diploma" at "Springfield High School" from 2020-08 to 2024-06;
+    }
+
+    classification {
+        FULL_STACK_DEVELOPER -> REJECTED;
+        MACHINE_LEARNING_ENGINEER -> REJECTED;
+        FRONTEND_DEVELOPER -> REJECTED;
+        DATA_ENGINEER -> REJECTED;
+        UNQUALIFIED -> ACCEPTED;
+    }
+}
