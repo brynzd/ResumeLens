@@ -1,9 +1,24 @@
-"""Validate the structure of résumé specifications.
+"""Validate résumé specifications written in the ResumeLens DSL.
 
-Demonstrates that textX accepts the specifications in ``examples/`` and
-``tests/valid/`` and rejects those in ``tests/invalid/`` (missing mandatory
-information, incorrect keywords, malformed structures, invalid nesting,
-incorrect list syntax, incomplete candidate profiles).
+Validation happens at three levels:
+
+- Lexical: every token must match its terminal (EMAIL, DATE, CANON, ...).
+- Syntactic: the tokens must follow the context-free grammar in
+  ``grammar/resume.tx``.
+- Semantic: rules the grammar cannot express, checked on the parsed model
+  (non-empty name, headline and location; at least one contact method;
+  periods that do not end before they start; unique, canonical skills;
+  a consistent classification).
+
+textX enforces the first two levels while parsing (``TextXSyntaxError``). The
+semantic rules are object processors registered on the metamodel
+(``TextXSemanticError``).
+
+Running the module demonstrates that the specifications in ``examples/`` and
+``tests/valid/`` are accepted and that those in ``tests/invalid/`` are
+rejected (missing mandatory information, incorrect keywords, malformed
+structures, invalid nesting, incorrect list syntax, incomplete candidate
+profiles, lexical and semantic errors).
 
 Usage:
     python src/validator.py
@@ -11,12 +26,94 @@ Usage:
 
 import sys
 
+from textx import TextXSemanticError, get_location
 from textx.exceptions import TextXError
 
 from parser import PROJECT_ROOT, get_metamodel
 
 VALID_DIRS = [PROJECT_ROOT / "examples", PROJECT_ROOT / "tests" / "valid"]
 INVALID_DIR = PROJECT_ROOT / "tests" / "invalid"
+
+# Output alphabet (Gamma) of the stage-2 transducers, as listed in
+# docs/domain.md: the only skills a candidate profile may contain.
+CANONICAL_SKILLS = {
+    "JAVASCRIPT", "TYPESCRIPT", "PYTHON", "SCALA",
+    "REACT", "ANGULAR", "VUE",
+    "CSS", "TAILWIND",
+    "NODE_JS", "DJANGO", "SPRING_BOOT",
+    "PANDAS", "NUMPY",
+    "SCIKIT_LEARN", "TENSORFLOW", "PYTORCH",
+    "SPARK", "AIRFLOW",
+    "POSTGRESQL", "MONGODB", "SQL",
+    "GIT",
+}
+
+
+def semantic_error(message, obj):
+    """Reject the model with an error located at ``obj`` (line and column)."""
+    raise TextXSemanticError(message, **get_location(obj))
+
+
+def check_candidate(candidate):
+    if not candidate.name.strip():
+        semantic_error("candidate name cannot be empty", candidate)
+
+
+def check_header(header):
+    for field in ("headline", "location"):
+        if not getattr(header, field).strip():
+            semantic_error(f"{field} cannot be empty", header)
+
+
+def check_contact(contact):
+    if not (contact.email or contact.phone or contact.linkedin):
+        semantic_error("contact needs at least one of: email, phone, linkedin", contact)
+
+
+def check_skills(skills):
+    seen = set()
+    for skill in skills.items:
+        if skill not in CANONICAL_SKILLS:
+            semantic_error(f"'{skill}' is not a canonical skill", skills)
+        if skill in seen:
+            semantic_error(f"duplicate skill '{skill}'", skills)
+        seen.add(skill)
+
+
+def check_period(period):
+    # Dates are fixed-width 'YYYY-MM[-DD]' strings, so comparing their
+    # 'YYYY-MM' prefixes as text is the same as comparing them in time.
+    if period.end != "present" and period.end[:7] < period.start[:7]:
+        semantic_error(f"period ends ({period.end}) before it starts ({period.start})", period)
+
+
+def check_classification(classification):
+    profiles = [result.profile for result in classification.items]
+    for profile in profiles:
+        if profiles.count(profile) > 1:
+            semantic_error(f"profile '{profile}' is classified more than once", classification)
+
+    accepted = [result.profile for result in classification.items if result.verdict == "ACCEPTED"]
+    if "UNQUALIFIED" in accepted and len(accepted) > 1:
+        semantic_error("UNQUALIFIED cannot be ACCEPTED together with another profile", classification)
+
+
+# Grammar rule -> function textX calls on every object built from that rule.
+SEMANTIC_CHECKS = {
+    "CandidateProfile": check_candidate,
+    "Header": check_header,
+    "Contact": check_contact,
+    "Skills": check_skills,
+    "Period": check_period,
+    "Classification": check_classification,
+}
+
+
+def get_validating_metamodel():
+    """Return the metamodel with the semantic checks registered."""
+    metamodel = get_metamodel()
+    metamodel.register_obj_processors(SEMANTIC_CHECKS)
+    return metamodel
 
 
 def validate_file(path, metamodel):
@@ -36,7 +133,7 @@ def collect_cases():
 
 
 def main():
-    metamodel = get_metamodel()
+    metamodel = get_validating_metamodel()
     cases = collect_cases()
     failures = 0
 

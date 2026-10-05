@@ -1,0 +1,25 @@
+// INVALID - semantic (missing mandatory information): the location contains only spaces.
+candidate "Wednesday Addams" {
+    headline: "Full Stack Developer";
+    location: "   ";
+
+    contact {
+        email: wednesday@nevermore.edu;
+    }
+
+    skills {
+        JAVASCRIPT, REACT, NODE_JS, POSTGRESQL, GIT
+    }
+
+    experience {
+        role "Software Developer" at "Nevermore Academy" from 2022-08 to present
+    }
+
+    education {
+        "B.Sc. in Computer Science" at "Nevermore Academy" from 2018-08 to 2022-05;
+    }
+
+    classification {
+        FULL_STACK_DEVELOPER -> ACCEPTED;
+    }
+}
