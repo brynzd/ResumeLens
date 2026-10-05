@@ -1,8 +1,9 @@
-"""Generate the Markdown visualization of a parsed résumé.
+"""Generate the Markdown visualization of a validated résumé.
 
-Builds a readable Markdown document from the model produced by ``parser.py``
-and writes it to ``output/`` (``examples/resume_01.resume`` ->
-``output/resume_01.md``).
+Validates a ``.resume`` file with ``validator.py`` (lexical, syntactic and
+semantic rules), builds a readable Markdown document from its model and
+writes it to ``output/`` (``examples/resume_01.resume`` ->
+``output/resume_01.md``). Invalid files are reported and nothing is written.
 
 Usage:
     python src/markdown_generator.py examples/resume_01.resume
@@ -11,7 +12,10 @@ Usage:
 import sys
 from pathlib import Path
 
-from parser import PROJECT_ROOT, get_metamodel, parse_file
+from textx.exceptions import TextXError
+
+from parser import PROJECT_ROOT, parse_file
+from validator import get_validating_metamodel
 
 OUTPUT_DIR = PROJECT_ROOT / "output"
 
@@ -73,7 +77,11 @@ def main():
         sys.exit(1)
 
     path = Path(sys.argv[1])
-    candidate = parse_file(path, get_metamodel())
+    try:
+        candidate = parse_file(path, get_validating_metamodel())
+    except TextXError as err:
+        print(f"{path}:{err.line}:{err.col}: invalid résumé: {err.message}")
+        sys.exit(1)
 
     OUTPUT_DIR.mkdir(exist_ok=True)
     out_path = OUTPUT_DIR / (path.stem + ".md")
