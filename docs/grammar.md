@@ -8,7 +8,7 @@ EBNF specification of the ResumeLens candidate profile language, implemented wit
 - `EMAIL` — Email address, e.g. `wednesday@nevermore.edu`
 - `PHONE` — Phone number, e.g. `+1 212 555 0134`
 - `URL` — `http(s)://...` web link
-- `DATE` — `YYYY-MM` or `YYYY-MM-DD`
+- `DATE` — `YYYY-MM` or `YYYY-MM-DD`, with month `01`–`12` and day `01`–`31`
 - `CANON` — Canonical skill token, uppercase identifier ($\Gamma$), e.g. `JAVASCRIPT`, `NODE_JS`, `PYTHON`
 - **Keywords:** `"candidate"` `"headline"` `"location"` `"summary"` `"contact"` `"email"` `"phone"` `"linkedin"` `"skills"` `"languages"` `"native"` `"full_professional"` `"professional"` `"basic"` `"experience"` `"role"` `"at"` `"in"` `"from"` `"to"` `"present"` `"education"` `"classification"` `"FULL_STACK_DEVELOPER"` `"MACHINE_LEARNING_ENGINEER"` `"FRONTEND_DEVELOPER"` `"DATA_ENGINEER"` `"UNQUALIFIED"` `"ACCEPTED"` `"REJECTED"`
 
