@@ -1,59 +1,65 @@
 from pyformlang.finite_automaton import DeterministicFiniteAutomaton, State, Symbol
 
+# The categories follow the canonical orders defined in normalizer.py
+# (CANONICAL_ORDERS), which guarantees the input sequence always arrives
+# category by category.
+PROFILE_PATTERNS = {
+    "FULL_STACK": [
+        ("language", ["JAVASCRIPT", "TYPESCRIPT"]),
+        ("frontend", ["REACT", "ANGULAR", "VUE"]),
+        ("backend", ["NODE_JS", "DJANGO", "SPRING_BOOT"]),
+        ("database", ["POSTGRESQL", "MONGODB"]),
+        ("version_control", ["GIT"]),
+    ],
+    "MACHINE_LEARNING": [
+        ("language", ["PYTHON"]),
+        ("data_processing", ["PANDAS", "NUMPY"]),
+        ("ml_framework", ["SCIKIT_LEARN", "TENSORFLOW", "PYTORCH"]),
+        ("database", ["POSTGRESQL", "SQL"]),
+        ("version_control", ["GIT"]),
+    ],
+    "FRONTEND": [
+        ("language", ["JAVASCRIPT", "TYPESCRIPT"]),
+        ("framework", ["REACT", "ANGULAR", "VUE"]),
+        ("styling", ["CSS", "TAILWIND"]),
+        ("version_control", ["GIT"]),
+    ],
+    "DATA_ENGINEER": [
+        ("language", ["PYTHON", "SCALA"]),
+        ("pipeline", ["SPARK", "AIRFLOW"]),
+        ("database", ["POSTGRESQL", "SQL"]),
+        ("version_control", ["GIT"]),
+    ],
+}
+
+
 def create_profile_dfa(profile_type: str) -> DeterministicFiniteAutomaton:
     """
     Creates and returns a Deterministic Finite Automaton (DFA)
     for the specified professional profile using pyformlang.
+
+    The DFA has one state per completed category: state q_i means
+    "categories 1..i are already covered". From q_i, any symbol of
+    category i+1 advances to q_(i+1); any additional symbol of the
+    category just covered loops on q_i. Every other symbol has no
+    transition, which makes the (partial) DFA reject the sequence.
     """
+    pattern = PROFILE_PATTERNS.get(profile_type.upper())
+    if pattern is None:
+        raise ValueError(f"Unknown profile type: {profile_type}")
+
     dfa = DeterministicFiniteAutomaton()
+    states = [State(f"q{i}") for i in range(len(pattern) + 1)]
 
-    # States definition
-    q0 = State("q0")
-    q1 = State("q1")
-    q2 = State("q2")
-    q3 = State("q3")
-    q4 = State("q4")
-    q5 = State("q5")
+    for i, (_category, symbols) in enumerate(pattern):
+        for symbol in symbols:
+            # First symbol of the category advances to the next state
+            dfa.add_transition(states[i], Symbol(symbol), states[i + 1])
+            # Additional symbols of the same category are absorbed
+            dfa.add_transition(states[i + 1], Symbol(symbol), states[i + 1])
 
-    # Configure transitions and profiles based on the project requirements
-    if profile_type.upper() == "FULL_STACK":
-        # Transitions for Full Stack: JAVASCRIPT -> REACT -> NODE_JS -> POSTGRESQL -> GIT
-        dfa.add_transition(q0, Symbol("JAVASCRIPT"), q1)
-        dfa.add_transition(q1, Symbol("REACT"), q2)
-        dfa.add_transition(q2, Symbol("NODE_JS"), q3)
-        dfa.add_transition(q3, Symbol("POSTGRESQL"), q4)
-        dfa.add_transition(q4, Symbol("GIT"), q5)
-        dfa.add_start_state(q0)
-        dfa.add_final_state(q5)
-
-    elif profile_type.upper() == "MACHINE_LEARNING":
-        # Transitions for ML Engineer: PYTHON -> PANDAS -> SCIKIT_LEARN -> POSTGRESQL -> GIT
-        dfa.add_transition(q0, Symbol("PYTHON"), q1)
-        dfa.add_transition(q1, Symbol("PANDAS"), q2)
-        dfa.add_transition(q2, Symbol("SCIKIT_LEARN"), q3)
-        dfa.add_transition(q3, Symbol("POSTGRESQL"), q4)
-        dfa.add_transition(q4, Symbol("GIT"), q5)
-        dfa.add_start_state(q0)
-        dfa.add_final_state(q5)
-
-    elif profile_type.upper() == "FRONTEND":
-        # Transitions for Frontend Developer: JAVASCRIPT -> REACT -> CSS -> GIT
-        dfa.add_transition(q0, Symbol("JAVASCRIPT"), q1)
-        dfa.add_transition(q1, Symbol("REACT"), q2)
-        dfa.add_transition(q2, Symbol("CSS"), q3)
-        dfa.add_transition(q3, Symbol("GIT"), q4)
-        dfa.add_start_state(q0)
-        dfa.add_final_state(q4)
-
-    elif profile_type.upper() == "DATA_ENGINEER":
-        # Transitions for Data Engineer: PYTHON -> SPARK -> POSTGRESQL -> GIT
-        dfa.add_transition(q0, Symbol("PYTHON"), q1)
-        dfa.add_transition(q1, Symbol("SPARK"), q2)
-        dfa.add_transition(q2, Symbol("POSTGRESQL"), q3)
-        dfa.add_transition(q3, Symbol("GIT"), q4)
-        dfa.add_start_state(q0)
-        dfa.add_final_state(q4)
-
+    dfa.add_start_state(states[0])
+    dfa.add_final_state(states[-1])
     return dfa
 
 def evaluate_resume_profile(normalized_qualifications: list, profile_type: str) -> bool:

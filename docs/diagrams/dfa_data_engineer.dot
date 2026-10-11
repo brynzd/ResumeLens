@@ -1,0 +1,16 @@
+digraph DATA_ENGINEER_DFA {
+    rankdir=LR;
+    node [shape=circle, fontname="Helvetica"];
+    edge [fontname="Helvetica", fontsize=11];
+    start [shape=point];
+    q4 [shape=doublecircle];
+    start -> q0;
+    q0 -> q1 [label="PYTHON | SCALA"];
+    q1 -> q1 [label="PYTHON | SCALA"];
+    q1 -> q2 [label="SPARK | AIRFLOW"];
+    q2 -> q2 [label="SPARK | AIRFLOW"];
+    q2 -> q3 [label="POSTGRESQL | SQL"];
+    q3 -> q3 [label="POSTGRESQL | SQL"];
+    q3 -> q4 [label="GIT"];
+    q4 -> q4 [label="GIT"];
+}
