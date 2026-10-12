@@ -1,80 +1,82 @@
 from pyformlang.finite_automaton import DeterministicFiniteAutomaton, State, Symbol
 
+# Each profile pattern is an ordered list of qualification categories.
+# A resume satisfies the profile when its normalized, canonically sorted
+# qualification sequence contains at least one symbol of every category,
+# in category order. Extra qualifications of the same category are absorbed
+# by self-loops, so an over-qualified candidate is still accepted.
+#
+# The categories follow the canonical orders defined in normalizer.py
+# (CANONICAL_ORDERS), which guarantees the input sequence always arrives
+# category by category.
+PROFILE_PATTERNS = {
+    "FULL_STACK": [
+        ("language", ["JAVASCRIPT", "TYPESCRIPT"]),
+        ("frontend", ["REACT", "ANGULAR", "VUE"]),
+        ("backend", ["NODE_JS", "DJANGO", "SPRING_BOOT"]),
+        ("database", ["POSTGRESQL", "MONGODB"]),
+        ("version_control", ["GIT"]),
+    ],
+    "MACHINE_LEARNING": [
+        ("language", ["PYTHON"]),
+        ("data_processing", ["PANDAS", "NUMPY"]),
+        ("ml_framework", ["SCIKIT_LEARN", "TENSORFLOW", "PYTORCH"]),
+        ("database", ["POSTGRESQL", "SQL"]),
+        ("version_control", ["GIT"]),
+    ],
+    "FRONTEND": [
+        ("language", ["JAVASCRIPT", "TYPESCRIPT"]),
+        ("framework", ["REACT", "ANGULAR", "VUE"]),
+        ("styling", ["CSS", "TAILWIND"]),
+        ("version_control", ["GIT"]),
+    ],
+    "DATA_ENGINEER": [
+        ("language", ["PYTHON", "SCALA"]),
+        ("pipeline", ["SPARK", "AIRFLOW"]),
+        ("database", ["POSTGRESQL", "SQL"]),
+        ("version_control", ["GIT"]),
+    ],
+}
+
+
 def create_profile_dfa(profile_type: str) -> DeterministicFiniteAutomaton:
     """
-    Creates a flexible Deterministic Finite Automaton (DFA) for the specified
-    professional profile, allowing alternative paths and optional tool sequences.
+    Creates and returns a Deterministic Finite Automaton (DFA)
+    for the specified professional profile using pyformlang.
+
+    The DFA has one state per completed category: state q_i means
+    "categories 1..i are already covered". From q_i, any symbol of
+    category i+1 advances to q_(i+1); any additional symbol of the
+    category just covered loops on q_i. Every other symbol has no
+    transition, which makes the (partial) DFA reject the sequence.
     """
+    pattern = PROFILE_PATTERNS.get(profile_type.upper())
+    if pattern is None:
+        raise ValueError(f"Unknown profile type: {profile_type}")
+
     dfa = DeterministicFiniteAutomaton()
+    states = [State(f"q{i}") for i in range(len(pattern) + 1)]
 
-    q0 = State("q0") # Initial state
-    q1 = State("q1") # Core frontend/lang
-    q2 = State("q2") # Core framework
-    q3 = State("q3") # Backend/Data
-    q4 = State("q4") # Database
-    q5 = State("q5") # Final accepting state (Git or final required tool)
+    for i, (_category, symbols) in enumerate(pattern):
+        for symbol in symbols:
+            # First symbol of the category advances to the next state
+            dfa.add_transition(states[i], Symbol(symbol), states[i + 1])
+            # Additional symbols of the same category are absorbed
+            dfa.add_transition(states[i + 1], Symbol(symbol), states[i + 1])
 
-    dfa.add_start_state(q0)
-    dfa.add_final_state(q5)
-
-    profile = profile_type.upper()
-
-    if profile == "FULL_STACK":
-        # Flexible transitions allowing JavaScript or TypeScript as start, etc.
-        dfa.add_transition(q0, Symbol("JAVASCRIPT"), q1)
-        dfa.add_transition(q0, Symbol("TYPESCRIPT"), q1)
-
-        dfa.add_transition(q1, Symbol("REACT"), q2)
-        dfa.add_transition(q1, Symbol("ANGULAR"), q2)
-        dfa.add_transition(q1, Symbol("VUE"), q2)
-
-        dfa.add_transition(q2, Symbol("NODE_JS"), q3)
-        dfa.add_transition(q2, Symbol("DJANGO"), q3)
-
-        dfa.add_transition(q3, Symbol("POSTGRESQL"), q4)
-        dfa.add_transition(q3, Symbol("MONGODB"), q4)
-
-        # Git can loop or lead directly to final state
-        dfa.add_transition(q4, Symbol("GIT"), q5)
-        dfa.add_transition(q4, Symbol("POSTGRESQL"), q4) # Allow self-loops for multiple DBs if needed
-
-    elif profile == "MACHINE_LEARNING":
-        dfa.add_transition(q0, Symbol("PYTHON"), q1)
-        dfa.add_transition(q1, Symbol("PANDAS"), q2)
-        dfa.add_transition(q1, Symbol("NUMPY"), q2)
-
-        dfa.add_transition(q2, Symbol("SCIKIT_LEARN"), q3)
-        dfa.add_transition(q2, Symbol("TENSORFLOW"), q3)
-        dfa.add_transition(q2, Symbol("PYTORCH"), q3)
-
-        dfa.add_transition(q3, Symbol("POSTGRESQL"), q4)
-        dfa.add_transition(q3, Symbol("SQL"), q4)
-
-        dfa.add_transition(q4, Symbol("GIT"), q5)
-
-    elif profile == "FRONTEND":
-        dfa.add_transition(q0, Symbol("JAVASCRIPT"), q1)
-        dfa.add_transition(q0, Symbol("TYPESCRIPT"), q1)
-        dfa.add_transition(q1, Symbol("REACT"), q2)
-        dfa.add_transition(q2, Symbol("CSS"), q3)
-        dfa.add_transition(q3, Symbol("GIT"), q4)
-        # Ajustamos estado final para frontend si termina en q4
-        dfa.add_final_state(q4)
-
-    elif profile == "DATA_ENGINEER":
-        dfa.add_transition(q0, Symbol("PYTHON"), q1)
-        dfa.add_transition(q0, Symbol("SCALA"), q1)
-        dfa.add_transition(q1, Symbol("SPARK"), q2)
-        dfa.add_transition(q2, Symbol("AIRFLOW"), q3)
-        dfa.add_transition(q3, Symbol("POSTGRESQL"), q4)
-        dfa.add_transition(q4, Symbol("GIT"), q5)
-
+    dfa.add_start_state(states[0])
+    dfa.add_final_state(states[-1])
     return dfa
+
 
 def evaluate_resume_profile(normalized_qualifications: list, profile_type: str) -> bool:
     """
-    Evaluates whether a normalized sequence of skills satisfies the flexible DFA.
+    Evaluates whether a sequence of normalized qualifications satisfies
+    the acceptance pattern of the given professional profile.
     """
     dfa = create_profile_dfa(profile_type)
+    # Convert list of string tokens into pyformlang symbols
     symbol_sequence = [Symbol(token) for token in normalized_qualifications]
+
+    # Returns True if the sequence is accepted by the DFA, False otherwise
     return dfa.accepts(symbol_sequence)
