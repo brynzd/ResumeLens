@@ -1,4 +1,4 @@
-digraph FRONTEND_DFA {
+digraph FRONTEND_DEVELOPER {
     rankdir=LR;
     node [shape=circle, fontname="Helvetica"];
     edge [fontname="Helvetica", fontsize=11];

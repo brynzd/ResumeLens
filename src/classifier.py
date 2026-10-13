@@ -1,84 +1,59 @@
+"""Stage 3: recognize the pattern of every profile with a DFA.
+
+docs/automata.md gives the 5-tuple and the diagram of each automaton.
+"""
+
 from pyformlang.finite_automaton import DeterministicFiniteAutomaton, State, Symbol
 
-# Each profile pattern (src/profiles.py) is an ordered list of qualification
-# categories. A resume satisfies the profile when its normalized, canonically
-# sorted qualification sequence contains at least one symbol of every
-# category, in category order. Extra qualifications of the same category are
-# absorbed by self-loops, so an over-qualified candidate is still accepted.
-#
-# Stage 2 sorts with the same categories (normalizer.CANONICAL_ORDERS), which
-# guarantees the input sequence always arrives category by category.
 from normalizer import sort_for_profile
 from profiles import PROFILE_PATTERNS, PROFILES
 
 
-def create_profile_dfa(profile_type: str) -> DeterministicFiniteAutomaton:
-    """
-    Creates and returns a Deterministic Finite Automaton (DFA)
-    for the specified professional profile using pyformlang.
+def create_profile_dfa(profile):
+    """DFA of a profile, where state q_i means "the first i categories are covered".
 
-    The DFA has one state per completed category: state q_i means
-    "categories 1..i are already covered". From q_i, any symbol of
-    category i+1 advances to q_(i+1); any additional symbol of the
-    category just covered loops on q_i. Every other symbol has no
-    transition, which makes the (partial) DFA reject the sequence.
+    A token of the next category advances to the next state, and another token
+    of the category just covered loops on the same state. Any other token has
+    no transition, so the sequence is rejected.
     """
-    pattern = PROFILE_PATTERNS.get(profile_type.upper())
-    if pattern is None:
-        raise ValueError(f"Unknown profile type: {profile_type}")
-
-    dfa = DeterministicFiniteAutomaton()
+    pattern = PROFILE_PATTERNS[profile]
     states = [State(f"q{i}") for i in range(len(pattern) + 1)]
 
-    for i, (_category, symbols) in enumerate(pattern):
-        for symbol in symbols:
-            # First symbol of the category advances to the next state
-            dfa.add_transition(states[i], Symbol(symbol), states[i + 1])
-            # Additional symbols of the same category are absorbed
-            dfa.add_transition(states[i + 1], Symbol(symbol), states[i + 1])
-
+    dfa = DeterministicFiniteAutomaton()
     dfa.add_start_state(states[0])
     dfa.add_final_state(states[-1])
+    for i, (_category, tokens) in enumerate(pattern):
+        for token in tokens:
+            dfa.add_transition(states[i], Symbol(token), states[i + 1])
+            dfa.add_transition(states[i + 1], Symbol(token), states[i + 1])
     return dfa
 
 
-def evaluate_resume_profile(normalized_qualifications: list, profile_type: str) -> bool:
-    """
-    Evaluates whether a sequence of normalized qualifications satisfies
-    the acceptance pattern of the given professional profile.
-    """
-    dfa = create_profile_dfa(profile_type)
-    # Convert list of string tokens into pyformlang symbols
-    symbol_sequence = [Symbol(token) for token in normalized_qualifications]
-
-    # Returns True if the sequence is accepted by the DFA, False otherwise
-    return dfa.accepts(symbol_sequence)
+PROFILE_DFAS = {profile: create_profile_dfa(profile) for profile in PROFILES}
 
 
-def classify(normalized_tokens: list) -> dict:
-    """
-    Evaluates the normalized qualifications against every profile (FR-16).
-    Each DFA reads the tokens of its own alphabet in its canonical order, so
-    zero, one or several profiles may accept the same resume.
-    """
-    return {
-        profile: evaluate_resume_profile(sort_for_profile(normalized_tokens, profile), profile)
-        for profile in PROFILES
-    }
+def evaluate_resume_profile(sequence, profile):
+    """True if the DFA of the profile accepts the sorted sequence of tokens."""
+    return PROFILE_DFAS[profile].accepts([Symbol(token) for token in sequence])
 
 
-def trace(sequence: list, profile_type: str) -> list:
-    """
-    Returns the states the profile DFA visits while reading the sequence.
-    The run stops at the first symbol without a transition (the implicit
-    trap state of the partial DFA).
-    """
-    dfa = create_profile_dfa(profile_type)
-    delta = dfa.to_dict()
+def classify(tokens):
+    """Verdict of every profile for the canonical tokens of a résumé."""
+    verdicts = {}
+    for profile in PROFILES:
+        sequence = sort_for_profile(tokens, profile)
+        verdicts[profile] = evaluate_resume_profile(sequence, profile)
+    return verdicts
+
+
+def trace(sequence, profile):
+    """States the DFA visits while reading the sequence, until a missing transition."""
+    dfa = PROFILE_DFAS[profile]
+    transitions = dfa.to_dict()
     state = dfa.start_state
     path = [str(state)]
     for token in sequence:
-        state = delta.get(state, {}).get(Symbol(token))
+        state = transitions[state].get(Symbol(token))
         if state is None:
             break
         path.append(str(state))

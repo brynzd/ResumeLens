@@ -1,4 +1,4 @@
-digraph FULL_STACK_DFA {
+digraph FULL_STACK_DEVELOPER {
     rankdir=LR;
     node [shape=circle, fontname="Helvetica"];
     edge [fontname="Helvetica", fontsize=11];

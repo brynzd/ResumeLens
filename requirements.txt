@@ -1,17 +1,6 @@
-# Python packages (pip install -r requirements.txt)
-# Python 3.10 or newer (streamlit 1.64 requires it); tested with 3.12 and 3.14.
-
-# Stage 1-4 core: grammar, automata and transducers
+# Python 3.10 or newer. Graphviz, which renders the diagrams, is not a pip package.
 textX==4.4.0
 pyformlang==1.0.11
-
-# Streamlit UI (src/app.py); pandas 2.3.3 is the first release with
-# wheels for Python 3.14
 streamlit==1.64.0
-pandas==2.3.3
-
-# Tests (python -m pytest)
+pandas==2.3.3  # used by streamlit; this version has wheels for Python 3.14
 pytest==8.4.2
-
-# Also required, but NOT pip-installable (system program, used to render
-# the .dot diagrams to PNG): Graphviz -> https://graphviz.org/download/

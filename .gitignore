@@ -14,5 +14,10 @@ venv/
 .vscode/
 .DS_Store
 .claude
-
 .extension/
+
+# Written by python src/pipeline.py
+output/pipeline/
+
+# Personal study notes
+guia/

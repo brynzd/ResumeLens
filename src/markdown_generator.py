@@ -1,12 +1,10 @@
-"""Generate the Markdown visualization of a validated résumé.
+"""Markdown visualization of a valid .resume file.
 
-Validates a ``.resume`` file with ``validator.py`` (lexical, syntactic and
-semantic rules), builds a readable Markdown document from its model and
-writes it to ``output/`` (``examples/resume_01.resume`` ->
-``output/resume_01.md``). Invalid files are reported and nothing is written.
+The file is validated first (lexical, syntactic and semantic rules); an invalid
+file is reported and nothing is written.
 
 Usage:
-    python src/markdown_generator.py examples/resume_01.resume
+    python src/markdown_generator.py examples/resume_01.resume   (writes output/resume_01.md)
 """
 
 import sys
@@ -20,52 +18,56 @@ from validator import get_validating_metamodel
 OUTPUT_DIR = PROJECT_ROOT / "output"
 
 
-def period_str(period):
-    """Format a Period as 'start - end'."""
+def period_text(period):
     return f"{period.start} - {period.end}"
 
 
-def generate_markdown(c):
-    """Return the Markdown text for a CandidateProfile model."""
-    lines = [f"# {c.name}", "", f"{c.header.headline} - {c.header.location}", ""]
-    if c.header.summary:
-        lines += [c.header.summary, ""]
+def generate_markdown(candidate):
+    """Markdown text of a candidate model."""
+    header = candidate.header
+    contact = candidate.contact
+
+    lines = [f"# {candidate.name}", "", f"{header.headline} - {header.location}", ""]
+    if header.summary:
+        lines += [header.summary, ""]
 
     lines.append("## Contact")
-    if c.contact.email:
-        lines.append(f"- Email: {c.contact.email}")
-    if c.contact.phone:
-        lines.append(f"- Phone: {c.contact.phone}")
-    if c.contact.linkedin:
-        lines.append(f"- LinkedIn: {c.contact.linkedin}")
+    if contact.email:
+        lines.append(f"- Email: {contact.email}")
+    if contact.phone:
+        lines.append(f"- Phone: {contact.phone}")
+    if contact.linkedin:
+        lines.append(f"- LinkedIn: {contact.linkedin}")
     lines.append("")
 
     lines.append("## Skills")
-    lines += [f"- {s}" for s in c.skills.items]
+    for skill in candidate.skills.items:
+        lines.append(f"- {skill}")
     lines.append("")
 
-    if c.languages:
+    if candidate.languages:
         lines.append("## Languages")
-        lines += [f"- {l.name}: {l.level}" for l in c.languages.items]
+        for language in candidate.languages.items:
+            lines.append(f"- {language.name}: {language.level}")
         lines.append("")
 
     lines.append("## Experience")
-    for exp in c.experiences.items:
-        place = f", {exp.location}" if exp.location else ""
-        lines.append(f"### {exp.role}")
-        lines.append(f"{exp.company}{place} ({period_str(exp.period)})")
-        lines += [f"- {t.description}" for t in exp.tasks]
+    for job in candidate.experiences.items:
+        place = f", {job.location}" if job.location else ""
+        lines.append(f"### {job.role}")
+        lines.append(f"{job.company}{place} ({period_text(job.period)})")
+        for task in job.tasks:
+            lines.append(f"- {task.description}")
         lines.append("")
 
     lines.append("## Education")
-    lines += [
-        f"- {d.degree}, {d.institution} ({period_str(d.period)})"
-        for d in c.education.items
-    ]
+    for degree in candidate.education.items:
+        lines.append(f"- {degree.degree}, {degree.institution} ({period_text(degree.period)})")
     lines.append("")
 
     lines.append("## Classification")
-    lines += [f"- {r.profile}: {r.verdict}" for r in c.classification.items]
+    for result in candidate.classification.items:
+        lines.append(f"- {result.profile}: {result.verdict}")
     lines.append("")
 
     return "\n".join(lines)

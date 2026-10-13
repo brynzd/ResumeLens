@@ -1,28 +1,21 @@
-"""Write the candidate profile document (.resume) from the pipeline results (FR-18).
+"""Write the candidate profile document (.resume) from the results of stages 1 to 3.
 
-The document follows grammar/resume.tx with the information of the three
-previous stages: what stage 1 extracted, the canonical skills of stage 2
-in the global canonical order, and the verdict of every profile from
-stage 3 (plus UNQUALIFIED -> ACCEPTED when no profile accepts).
-
-Nothing is invented. When the résumé lacks a mandatory part (a headline,
-the contact information, an experience, ...) it is written empty, and
+Nothing is invented: a mandatory part the résumé lacks is written empty, and
 textX rejects the document as an incomplete candidate profile.
 """
 
 from normalizer import GLOBAL_ORDER
 from profiles import PROFILES
 
-INDENT = "    "
-
 
 def quote(text):
-    """Write a DSL STRING: double quotes and backslashes in the text are replaced."""
-    return '"' + (text or "").replace("\\", "/").replace('"', "'") + '"'
+    """Write a text as a DSL STRING (double quotes inside become single quotes)."""
+    text = (text or "").replace("\\", "/").replace('"', "'")
+    return f'"{text}"'
 
 
 def missing_information(data, tokens):
-    """Mandatory parts of a candidate document the résumé does not provide."""
+    """Mandatory parts of the document that the résumé does not provide."""
     personal = data["personal"]
     present = {
         "name": personal["name"],
@@ -36,54 +29,71 @@ def missing_information(data, tokens):
     return [part for part, value in present.items() if not value]
 
 
+def section(name, body):
+    """Lines of a block 'name { ... }' with its body indented."""
+    lines = ["", f"    {name} {{"]
+    for line in body:
+        lines.append("        " + line)
+    lines.append("    }")
+    return lines
+
+
+def experience_body(jobs):
+    body = []
+    for job in jobs:
+        role = (f"role {quote(job['title'])} at {quote(job['organization'])}"
+                f" from {job['start']} to {job['end']}")
+        if job["tasks"]:
+            body.append(role + " {")
+            for task in job["tasks"]:
+                body.append(f"    - {quote(task)}")
+            body.append("}")
+        else:
+            body.append(role)
+    return body
+
+
 def build_resume(data, tokens, verdicts):
-    """Return the text of the candidate profile document."""
-    personal, contact = data["personal"], data["contact"]
-    lines = [
-        f"candidate {quote(personal['name'])} {{",
-        f"{INDENT}headline: {quote(personal['headline'])};",
-        f"{INDENT}location: {quote(personal['location'])};",
-    ]
+    """Text of the candidate document for the extracted data, tokens and verdicts."""
+    personal = data["personal"]
+    contact = data["contact"]
+
+    lines = [f"candidate {quote(personal['name'])} {{"]
+    lines.append(f"    headline: {quote(personal['headline'])};")
+    lines.append(f"    location: {quote(personal['location'])};")
     if personal["summary"]:
-        lines.append(f"{INDENT}summary: {quote(personal['summary'])};")
+        lines.append(f"    summary: {quote(personal['summary'])};")
 
-    lines += ["", f"{INDENT}contact {{"]
-    lines += [f"{INDENT * 2}{key}: {contact[key]};" for key in ("email", "phone", "linkedin") if contact[key]]
-    lines.append(f"{INDENT}}}")
+    contact_body = []
+    for field in ("email", "phone", "linkedin"):
+        if contact[field]:
+            contact_body.append(f"{field}: {contact[field]};")
+    lines += section("contact", contact_body)
 
-    skills = ", ".join(sorted(tokens, key=GLOBAL_ORDER.index))
-    lines += ["", f"{INDENT}skills {{", f"{INDENT * 2}{skills}", f"{INDENT}}}"]
+    skills = [token for token in GLOBAL_ORDER if token in tokens]
+    lines += section("skills", [", ".join(skills)])
 
     if data["languages"]:
-        lines += ["", f"{INDENT}languages {{"]
-        lines += [f"{INDENT * 2}{quote(lang['name'])}: {lang['level']};" for lang in data["languages"]]
-        lines.append(f"{INDENT}}}")
+        languages_body = []
+        for language in data["languages"]:
+            languages_body.append(f"{quote(language['name'])}: {language['level']};")
+        lines += section("languages", languages_body)
 
-    lines += ["", f"{INDENT}experience {{"]
-    for job in data["experience"]:
-        header = (
-            f"{INDENT * 2}role {quote(job['title'])} at {quote(job['organization'])}"
-            f" from {job['start']} to {job['end']}"
-        )
-        if job["tasks"]:
-            lines.append(header + " {")
-            lines += [f"{INDENT * 3}- {quote(task)}" for task in job["tasks"]]
-            lines.append(f"{INDENT * 2}}}")
-        else:
-            lines.append(header)
-    lines.append(f"{INDENT}}}")
+    lines += section("experience", experience_body(data["experience"]))
 
-    lines += ["", f"{INDENT}education {{"]
-    lines += [
-        f"{INDENT * 2}{quote(degree['title'])} at {quote(degree['organization'])}"
-        f" from {degree['start']} to {degree['end']};"
-        for degree in data["education"]
-    ]
-    lines.append(f"{INDENT}}}")
+    education_body = []
+    for degree in data["education"]:
+        education_body.append(f"{quote(degree['title'])} at {quote(degree['organization'])}"
+                              f" from {degree['start']} to {degree['end']};")
+    lines += section("education", education_body)
 
-    lines += ["", f"{INDENT}classification {{"]
-    lines += [f"{INDENT * 2}{p} -> {'ACCEPTED' if verdicts[p] else 'REJECTED'};" for p in PROFILES]
+    classification_body = []
+    for profile in PROFILES:
+        verdict = "ACCEPTED" if verdicts[profile] else "REJECTED"
+        classification_body.append(f"{profile} -> {verdict};")
     if not any(verdicts.values()):
-        lines.append(f"{INDENT * 2}UNQUALIFIED -> ACCEPTED;")
-    lines += [f"{INDENT}}}", "}"]
+        classification_body.append("UNQUALIFIED -> ACCEPTED;")
+    lines += section("classification", classification_body)
+
+    lines.append("}")
     return "\n".join(lines) + "\n"

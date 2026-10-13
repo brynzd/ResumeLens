@@ -1,28 +1,16 @@
-"""Stage 1 - extract candidate information from a plain-text résumé.
+"""Stage 1: extract the information of a plain-text résumé with regular expressions.
 
-Every type of information has its own regular expression, implemented with
-Python's ``re`` module; docs/regular_expressions.md explains the language
-each one recognizes. Extraction only finds strings: it keeps them exactly
-as written (FR-08) and does not decide whether two strings are equivalent
-(stage 2) or whether the candidate satisfies a profile (stage 3).
-
-The result is a dictionary grouped by type of information (FR-09), which
-``save_extracted_data`` stores as JSON.
-
-Usage:
-    python src/extractor.py data/resumes/wednesday.txt
+The strings are kept exactly as written. docs/regular_expressions.md explains
+the language each pattern recognizes.
 """
 
 import json
-import os
 import re
-import sys
 
-# --- Personal information -------------------------------------------------
+# --- Personal information ---
 
-# A name is the first non-empty line of the résumé: two to five words that
-# start with a capital letter (accents, apostrophes and hyphens allowed),
-# optionally joined by lowercase particles such as "de" or "van".
+# The name is the first non-empty line: two to five capitalized words,
+# optionally joined by particles such as "de" or "van".
 NAME_WORD = r"[A-ZÁÉÍÓÚÑÜ][A-Za-zÁÉÍÓÚÑÜáéíóúñü'’-]*"
 NAME_PARTICLE = r"(?:de|del|la|las|los|van|von|da|di|y)"
 NAME = re.compile(
@@ -30,20 +18,18 @@ NAME = re.compile(
     re.MULTILINE,
 )
 
-# "Headline: ...", "Location: ...", "Summary: ..." lines.
+# Lines "Headline: ...", "Location: ..." and "Summary: ..."
 FIELD = re.compile(
     r"^[ \t]*(?P<key>headline|location|summary)[ \t]*:[ \t]*(?P<value>[^\n]*?)[ \t]*$",
     re.MULTILINE | re.IGNORECASE,
 )
 
-# --- Contact information --------------------------------------------------
+# --- Contact information ---
 
 EMAIL = re.compile(r"[A-Za-z0-9._+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")
 
-# International numbers (+country code, an optional area code in
-# parentheses and two to four groups of digits) or ten-digit local numbers.
-# The groups are non-capturing on purpose: re.findall returns the captured
-# groups instead of the whole match when a pattern has any.
+# International numbers (+country code, optional area code and groups of
+# digits) or ten-digit local numbers
 PHONE = re.compile(
     r"(?<![\w+])(?:\+\d{1,3}(?:[ -]?\(\d{1,4}\))?(?:[ -]?\d{1,4}){2,4}"
     r"|\d{3}[ -]?\d{3}[ -]?\d{4})(?!\d)"
@@ -51,50 +37,47 @@ PHONE = re.compile(
 
 LINKEDIN = re.compile(r"https?://(?:www\.)?linkedin\.com/in/[A-Za-z0-9_-]+/?")
 
-# --- Skills: programming languages, frameworks, databases, tools ----------
+# --- Skills: one pattern per category ---
 
-# One pattern per category. They are combined into a single pattern with
-# named groups, so finditer scans the text once, left to right, without
-# overlapping matches: "Node.js" is read as a framework before its "js"
-# could be read as a language. "js"/"ts" right after a dot ("Next.js",
-# "app.ts") are file extensions, not the languages.
-SKILL_PATTERNS = {
-    "programming_languages": (
-        r"java[ \t]?script|type[ \t]?script|python3?|scala|css3?|(?<!\.)js|(?<!\.)ts"
-    ),
-    "frameworks_libraries": (
-        r"react(?:[ \t.]?js)?|angular(?:[ \t.]?js)?|vue(?:[ \t.]?js)?"
-        r"|node(?:[ \t.]?js)?|django|spring[ \t-]?boot|tailwind(?:[ \t]?css)?"
-        r"|pandas|num[ \t]?py|sklearn|scikit[ \t-]?learn|tensor[ \t]?flow|py[ \t]?torch"
-    ),
-    "databases": r"postgres(?:ql)?|mongo(?:[ \t]?db)?|sql",
-    "tools": (
-        r"git|(?:apache[ \t])?spark|pyspark|(?:apache[ \t])?airflow"
-        r"|docker|kubernetes|aws|gcp|terraform"
-    ),
-}
-SKILLS = re.compile(
-    r"\b(?:" + "|".join(f"(?P<{cat}>{pattern})" for cat, pattern in SKILL_PATTERNS.items()) + r")\b",
-    re.IGNORECASE,
+PROGRAMMING_LANGUAGES = r"java[ \t]?script|type[ \t]?script|python3?|scala|css3?|(?<!\.)js|(?<!\.)ts"
+FRAMEWORKS_LIBRARIES = (
+    r"react(?:[ \t.]?js)?|angular(?:[ \t.]?js)?|vue(?:[ \t.]?js)?"
+    r"|node(?:[ \t.]?js)?|django|spring[ \t-]?boot|tailwind(?:[ \t]?css)?"
+    r"|pandas|num[ \t]?py|sklearn|scikit[ \t-]?learn|tensor[ \t]?flow|py[ \t]?torch"
+)
+DATABASES = r"postgres(?:ql)?|mongo(?:[ \t]?db)?|sql"
+TOOLS = (
+    r"git|(?:apache[ \t])?spark|pyspark|(?:apache[ \t])?airflow"
+    r"|docker|kubernetes|aws|gcp|terraform"
 )
 
-# The list after "Skills:" or "Technical Skills:", on the same line or the
-# next one. Its items that no skill pattern recognizes ("COBOL") are kept as
-# unrecognized, so stage 2 can report them instead of losing them silently.
+# Union of the four categories, with a named group for each one. The text is
+# scanned once from left to right, so "Node.js" is read as a framework and its
+# "js" is not read again as a language.
+SKILLS = re.compile(
+    rf"\b(?:(?P<programming_languages>{PROGRAMMING_LANGUAGES})"
+    rf"|(?P<frameworks_libraries>{FRAMEWORKS_LIBRARIES})"
+    rf"|(?P<databases>{DATABASES})"
+    rf"|(?P<tools>{TOOLS}))\b",
+    re.IGNORECASE,
+)
+SKILL_CATEGORIES = ["programming_languages", "frameworks_libraries", "databases", "tools"]
+
+# The list after "Skills:" or "Technical Skills:", on the same line or the next one
 SKILLS_LIST = re.compile(
     r"^[ \t]*(?:technical[ \t]+)?skills[ \t]*:[ \t]*\n?[ \t]*(?P<items>[^\n]+)",
     re.MULTILINE | re.IGNORECASE,
 )
 LIST_SEPARATOR = re.compile(r"[ \t]*[,;][ \t]*")
 
-# Descriptive phrases that are qualifications but not tools (FR-07).
+# Qualifications that are phrases, not tools
 OTHER_QUALIFICATIONS = re.compile(
     r"\b(?:rest(?:ful)?[ \t]+apis?|(?:predictive|machine[ \t-]learning)[ \t]+models?"
     r"|data[ \t-]processing[ \t]+pipelines?|web[ \t]+applications?)\b",
     re.IGNORECASE,
 )
 
-# --- Academic qualifications and professional experience ------------------
+# --- Academic qualifications and professional experience ---
 
 ACADEMIC = re.compile(
     r"\b(?:B\.?[ \t]?Sc\.?|M\.?[ \t]?Sc\.?|Ph\.?[ \t]?D\.?|Bachelor(?:'s)?|Master(?:'s)?"
@@ -104,7 +87,8 @@ ACADEMIC = re.compile(
 )
 
 YEARS = re.compile(
-    r"\b(?P<years>\d{1,2})\+?[ \t]+(?:years?|años?|anos?)[ \t]+(?:of|de)[ \t]+(?:experience|experiencia)\b",
+    r"\b(?P<years>\d{1,2})\+?[ \t]+(?:years?|años?|anos?)[ \t]+"
+    r"(?:of|de)[ \t]+(?:experience|experiencia)\b",
     re.IGNORECASE,
 )
 
@@ -114,20 +98,20 @@ SECTION = re.compile(
     re.MULTILINE | re.IGNORECASE,
 )
 
-# Same language as the DATE terminal of the DSL: YYYY-MM or YYYY-MM-DD.
+# YYYY-MM or YYYY-MM-DD, the same language as the DATE terminal of the DSL
 DATE = r"\d{4}-(?:0[1-9]|1[0-2])(?:-(?:0[1-9]|[12]\d|3[01]))?"
 
-# "Title at Organization (start - end)", used for positions and degrees.
+# "Title at Organization (start - end)", for positions and degrees
 ENTRY = re.compile(
     rf"^[ \t]*(?P<title>[^\n]+?)[ \t]+at[ \t]+(?P<organization>[^\n(]+?)[ \t]*"
     rf"\((?P<start>{DATE})[ \t]*[-–][ \t]*(?P<end>{DATE}|present)\)[ \t]*$",
     re.MULTILINE | re.IGNORECASE,
 )
 
-# "- task" lines below a position.
+# "- task" lines below a position
 TASK = re.compile(r"^[ \t]*[-•*][ \t]+(?P<task>[^\n]+?)[ \t]*$", re.MULTILINE)
 
-# "English: native", "Spanish (full professional)", "French - basic".
+# "English: native", "Spanish (full professional)", "French - basic"
 LANGUAGE = re.compile(
     r"^[ \t]*(?P<name>[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)[ \t]*(?::|-|–|\()[ \t]*"
     r"(?P<level>native|full[ _]professional|professional|basic)\)?[ \t]*$",
@@ -136,28 +120,35 @@ LANGUAGE = re.compile(
 
 
 def unique(items):
-    """Keep the first occurrence of every item, in order."""
-    return list(dict.fromkeys(items))
+    """The items without repetitions, in order of first appearance."""
+    result = []
+    for item in items:
+        if item not in result:
+            result.append(item)
+    return result
 
 
-def unrecognized_skills(text):
-    """Items of the skills list that are not, as a whole, a known skill."""
-    listed = SKILLS_LIST.search(text)
-    if not listed:
-        return []
-    items = LIST_SEPARATOR.split(listed["items"].strip().rstrip("."))
-    return [item for item in items if item and not SKILLS.fullmatch(item)]
+def first_match(pattern, text):
+    """The first string of the text that the pattern recognizes, or None."""
+    match = pattern.search(text)
+    if match is None:
+        return None
+    return match.group()
 
 
 def split_sections(text):
-    """Return {'experience': text, 'education': text, ...} for the headed sections."""
+    """Text of every headed section: {"experience": "...", "education": "...", ...}."""
+    # With a group in the pattern, split returns [before, name, text, name, text, ...]
     parts = SECTION.split(text)
-    return {parts[i].lower(): parts[i + 1] for i in range(1, len(parts), 2)}
+    sections = {}
+    for i in range(1, len(parts), 2):
+        sections[parts[i].lower()] = parts[i + 1]
+    return sections
 
 
-def extract_entries(block, with_tasks):
-    """Entries 'Title at Organization (start - end)' of a section."""
-    matches = list(ENTRY.finditer(block))
+def extract_entries(section, with_tasks):
+    """Entries "Title at Organization (start - end)" of a section."""
+    matches = list(ENTRY.finditer(section))
     entries = []
     for i, match in enumerate(matches):
         entry = {
@@ -167,29 +158,57 @@ def extract_entries(block, with_tasks):
             "end": match["end"].lower(),
         }
         if with_tasks:
-            end = matches[i + 1].start() if i + 1 < len(matches) else len(block)
-            entry["tasks"] = [t["task"] for t in TASK.finditer(block, match.end(), end)]
+            # The tasks are the "- ..." lines up to the next entry
+            if i + 1 < len(matches):
+                end = matches[i + 1].start()
+            else:
+                end = len(section)
+            lines = section[match.end():end]
+            entry["tasks"] = [task["task"] for task in TASK.finditer(lines)]
         entries.append(entry)
     return entries
 
 
-def extract_resume_entities(text_content: str) -> dict:
-    """Extract every type of information from a plaintext résumé."""
-    sections = split_sections(text_content)
-    name = NAME.search(text_content)
+def extract_languages(section):
+    """Spoken languages with their level, written as the keyword of the DSL."""
+    languages = []
+    for match in LANGUAGE.finditer(section):
+        level = match["level"].lower().replace(" ", "_")
+        languages.append({"name": match["name"], "level": level})
+    return languages
+
+
+def unrecognized_skills(text):
+    """Items of the skills list that are not a known skill, such as "COBOL"."""
+    skills_list = SKILLS_LIST.search(text)
+    if skills_list is None:
+        return []
+    items = LIST_SEPARATOR.split(skills_list["items"].strip().rstrip("."))
+    return [item for item in items if item and not SKILLS.fullmatch(item)]
+
+
+def extract_resume_entities(text):
+    """Extract every type of information of a résumé, grouped in a dictionary."""
+    name = NAME.search(text)
+    years = YEARS.search(text)
+    sections = split_sections(text)
+
     fields = {}
-    for match in FIELD.finditer(text_content):
-        fields.setdefault(match["key"].lower(), match["value"] or None)
-    years = YEARS.search(text_content)
+    for match in FIELD.finditer(text):
+        key = match["key"].lower()
+        if key not in fields:
+            fields[key] = match["value"] or None
 
-    skills = {category: [] for category in SKILL_PATTERNS}
-    for match in SKILLS.finditer(text_content):
-        skills[match.lastgroup].append(match.group())
-    skills["unrecognized"] = unrecognized_skills(text_content)
+    found = {category: [] for category in SKILL_CATEGORIES}
+    technologies = []
+    for match in SKILLS.finditer(text):
+        found[match.lastgroup].append(match.group())  # lastgroup: the category matched
+        technologies.append(match.group())
 
-    def first(pattern):
-        found = pattern.search(text_content)
-        return found.group() if found else None
+    skills = {}
+    for category in SKILL_CATEGORIES:
+        skills[category] = unique(found[category])
+    skills["unrecognized"] = unique(unrecognized_skills(text))
 
     return {
         "personal": {
@@ -199,46 +218,23 @@ def extract_resume_entities(text_content: str) -> dict:
             "summary": fields.get("summary"),
         },
         "contact": {
-            "email": first(EMAIL),
-            "phone": first(PHONE),
-            "linkedin": first(LINKEDIN),
+            "email": first_match(EMAIL, text),
+            "phone": first_match(PHONE, text),
+            "linkedin": first_match(LINKEDIN, text),
         },
-        "skills": {category: unique(found) for category, found in skills.items()},
-        # Every skill string in order of appearance, then the unrecognized
-        # items of the skills list: the input of stage 2.
-        "technologies": unique(
-            [m.group() for m in SKILLS.finditer(text_content)] + skills["unrecognized"]
-        ),
-        "other_qualifications": unique(m.group() for m in OTHER_QUALIFICATIONS.finditer(text_content)),
-        "academic_qualifications": unique(m.group() for m in ACADEMIC.finditer(text_content)),
+        "skills": skills,
+        # Input of stage 2: every skill string, then the unknown items of the list
+        "technologies": unique(technologies + skills["unrecognized"]),
+        "other_qualifications": unique(OTHER_QUALIFICATIONS.findall(text)),
+        "academic_qualifications": unique(ACADEMIC.findall(text)),
         "experience_years": int(years["years"]) if years else None,
         "experience": extract_entries(sections.get("experience", ""), with_tasks=True),
         "education": extract_entries(sections.get("education", ""), with_tasks=False),
-        "languages": [
-            {"name": m["name"], "level": m["level"].lower().replace(" ", "_")}
-            for m in LANGUAGE.finditer(sections.get("languages", ""))
-        ],
+        "languages": extract_languages(sections.get("languages", "")),
     }
 
 
-def save_extracted_data(extracted_data: dict, output_path: str = "extracted_resume.json"):
-    """
-    Saves the structured extracted data into a persistent file (JSON format),
-    ensuring that the parent directory exists beforehand.
-    """
-    # Get the directory path from output_path (if any)
-    directory = os.path.dirname(output_path)
-    if directory:
-        # Create the directory if it doesn't exist
-        os.makedirs(directory, exist_ok=True)
-
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(extracted_data, f, indent=4, ensure_ascii=False)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python src/extractor.py <resume.txt>")
-        sys.exit(1)
-    with open(sys.argv[1], encoding="utf-8") as file:
-        print(json.dumps(extract_resume_entities(file.read()), indent=4, ensure_ascii=False))
+def save_extracted_data(data, path):
+    """Store the extracted information in a JSON file."""
+    with open(path, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)

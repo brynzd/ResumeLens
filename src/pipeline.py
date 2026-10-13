@@ -1,18 +1,11 @@
-"""The ResumeLens pipeline, from a plain-text résumé to its candidate document.
-
-résumé text -> stage 1: extraction (regular expressions)
-            -> stage 2: normalization (finite-state transducer)
-            -> stage 3: recognition (one DFA per profile)
-            -> stage 4: candidate profile document validated with textX
-            -> Markdown visualization
-
-Usage:
-    python src/pipeline.py data/resumes/wednesday.txt [more résumés ...]
+"""The ResumeLens pipeline: from a plain-text résumé to its candidate document.
 
 For every résumé it prints the result of each stage and writes to
-output/pipeline/ the extracted information (<name>.json), the candidate
-document (<name>.resume) and, when the document is valid, its Markdown
-visualization (<name>.md).
+output/pipeline/ the extracted information (.json), the candidate document
+(.resume) and, when the document is valid, its Markdown (.md).
+
+Usage:
+    python src/pipeline.py data/resumes/wednesday.txt [more résumés]
 """
 
 import sys
@@ -32,32 +25,48 @@ from validator import get_validating_metamodel
 OUTPUT_DIR = PROJECT_ROOT / "output" / "pipeline"
 
 
-def run_pipeline(text, metamodel=None):
-    """Run the four stages on a résumé text and return every intermediate result."""
+def run_pipeline(text, metamodel):
+    """Run the four stages on a résumé and return the result of each one."""
+    # Stage 1: regular expressions
     data = extract_resume_entities(text)
+
+    # Stage 2: finite-state transducer
     tokens, unknown = normalize(data["technologies"])
-    sequences = {p: sort_for_profile(tokens, p) for p in PROFILES}
-    verdicts = {p: evaluate_resume_profile(sequences[p], p) for p in PROFILES}
-    result = {
+    translations = {}
+    for raw in data["technologies"]:
+        translations[raw] = translate(raw)
+
+    # Stage 3: one DFA per profile, on the tokens in the profile's canonical order
+    sequences = {}
+    verdicts = {}
+    traces = {}
+    for profile in PROFILES:
+        sequences[profile] = sort_for_profile(tokens, profile)
+        verdicts[profile] = evaluate_resume_profile(sequences[profile], profile)
+        traces[profile] = trace(sequences[profile], profile)
+
+    # Stage 4: candidate document, validated with textX, and its Markdown
+    document = build_resume(data, tokens, verdicts)
+    error = None
+    markdown = None
+    try:
+        markdown = generate_markdown(metamodel.model_from_str(document))
+    except TextXError as err:
+        error = f"{type(err).__name__} {err.line}:{err.col}: {err.message}"
+
+    return {
         "extracted": data,
-        "translations": {raw: translate(raw) for raw in data["technologies"]},
+        "translations": translations,
         "tokens": tokens,
         "unknown": unknown,
         "sequences": sequences,
-        "traces": {p: trace(sequences[p], p) for p in PROFILES},
         "verdicts": verdicts,
+        "traces": traces,
         "missing": missing_information(data, tokens),
-        "document": build_resume(data, tokens, verdicts),
-        "error": None,
-        "markdown": None,
+        "document": document,
+        "error": error,
+        "markdown": markdown,
     }
-    try:
-        model = (metamodel or get_validating_metamodel()).model_from_str(result["document"])
-    except TextXError as err:
-        result["error"] = f"{type(err).__name__} {err.line}:{err.col}: {err.message}"
-    else:
-        result["markdown"] = generate_markdown(model)
-    return result
 
 
 def report(name, result):
@@ -65,7 +74,8 @@ def report(name, result):
     data = result["extracted"]
     print(f"== {name}")
     print("Stage 1 - extraction (regular expressions)")
-    print(f"   candidate: {data['personal']['name']} | years of experience: {data['experience_years']}")
+    print(f"   candidate: {data['personal']['name']}"
+          f" | years of experience: {data['experience_years']}")
     print(f"   skills as written: {', '.join(data['technologies']) or '-'}")
     print("Stage 2 - normalization (finite-state transducer)")
     print(f"   canonical tokens: {', '.join(result['tokens']) or '-'}")
@@ -73,8 +83,9 @@ def report(name, result):
     print("Stage 3 - recognition (one DFA per profile)")
     for profile in PROFILES:
         verdict = "ACCEPTED" if result["verdicts"][profile] else "REJECTED"
-        path = " -> ".join(result["traces"][profile])
-        print(f"   {profile:26} {verdict:8} {', '.join(result['sequences'][profile]) or '(empty)'}  [{path}]")
+        sequence = ", ".join(result["sequences"][profile]) or "(empty)"
+        states = " -> ".join(result["traces"][profile])
+        print(f"   {profile:26} {verdict:8} {sequence}  [{states}]")
     print("Stage 4 - candidate profile document (textX)")
     if result["missing"]:
         print(f"   missing in the résumé: {', '.join(result['missing'])}")
@@ -91,7 +102,7 @@ def main(paths):
     for name in paths:
         path = Path(name)
         result = run_pipeline(path.read_text(encoding="utf-8"), metamodel)
-        save_extracted_data(result["extracted"], str(OUTPUT_DIR / f"{path.stem}.json"))
+        save_extracted_data(result["extracted"], OUTPUT_DIR / f"{path.stem}.json")
         (OUTPUT_DIR / f"{path.stem}.resume").write_text(result["document"], encoding="utf-8")
         if result["markdown"] is not None:
             (OUTPUT_DIR / f"{path.stem}.md").write_text(result["markdown"], encoding="utf-8")
@@ -100,6 +111,6 @@ def main(paths):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python src/pipeline.py <resume.txt> [more résumés ...]")
+        print("Usage: python src/pipeline.py <resume.txt> [more résumés]")
         sys.exit(1)
     main(sys.argv[1:])

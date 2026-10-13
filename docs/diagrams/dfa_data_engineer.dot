@@ -1,4 +1,4 @@
-digraph DATA_ENGINEER_DFA {
+digraph DATA_ENGINEER {
     rankdir=LR;
     node [shape=circle, fontname="Helvetica"];
     edge [fontname="Helvetica", fontsize=11];

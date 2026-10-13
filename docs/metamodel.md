@@ -29,7 +29,7 @@ The full, runnable walkthrough is in the project notebook
 
 ## The metamodel
 
-![ResumeLens metamodel](diagrams/resume_meta.dot.png)
+![ResumeLens metamodel](diagrams/resume_meta.png)
 
 Reading the diagram from the top: the root class is **`CandidateProfile`**, created by the
 first rule of the grammar. It carries a single plain attribute, `name`, and seven
@@ -136,7 +136,7 @@ textx generate resume_01.resume --grammar resume.tx --target dot
 dot -Tpng -O resume_01_tree.dot
 ```
 
-![Model of the Wednesday Addams document](diagrams/resume_01_tree.dot.png)
+![Model of the Wednesday Addams document](diagrams/resume_01_tree.png)
 
 The picture is the metamodel instantiated. The root is now a concrete object,
 `Wednesday Addams:CandidateProfile`, and each arrow carries the attribute name it fills.
@@ -176,9 +176,9 @@ shape of `resume_01` with a phone instead of a LinkedIn URL; `resume_03` (Peter 
 adds the optional `Languages` node with two `Language` objects, two `Experience` objects
 (the second one without tasks), two `Degree` objects and two `ACCEPTED` results.
 
-![Model of the Mary Jane Watson document](diagrams/resume_02_tree.dot.png)
+![Model of the Mary Jane Watson document](diagrams/resume_02_tree.png)
 
-![Model of the Peter Parker document](diagrams/resume_03_tree.dot.png)
+![Model of the Peter Parker document](diagrams/resume_03_tree.png)
 
 Every diagram of this document is generated from the grammar and the examples by
 `python src/diagrams.py`.
