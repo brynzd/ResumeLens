@@ -8,7 +8,8 @@ from pyformlang.finite_automaton import DeterministicFiniteAutomaton, State, Sym
 #
 # Stage 2 sorts with the same categories (normalizer.CANONICAL_ORDERS), which
 # guarantees the input sequence always arrives category by category.
-from profiles import PROFILE_PATTERNS
+from normalizer import sort_for_profile
+from profiles import PROFILE_PATTERNS, PROFILES
 
 
 def create_profile_dfa(profile_type: str) -> DeterministicFiniteAutomaton:
@@ -52,3 +53,33 @@ def evaluate_resume_profile(normalized_qualifications: list, profile_type: str) 
 
     # Returns True if the sequence is accepted by the DFA, False otherwise
     return dfa.accepts(symbol_sequence)
+
+
+def classify(normalized_tokens: list) -> dict:
+    """
+    Evaluates the normalized qualifications against every profile (FR-16).
+    Each DFA reads the tokens of its own alphabet in its canonical order, so
+    zero, one or several profiles may accept the same resume.
+    """
+    return {
+        profile: evaluate_resume_profile(sort_for_profile(normalized_tokens, profile), profile)
+        for profile in PROFILES
+    }
+
+
+def trace(sequence: list, profile_type: str) -> list:
+    """
+    Returns the states the profile DFA visits while reading the sequence.
+    The run stops at the first symbol without a transition (the implicit
+    trap state of the partial DFA).
+    """
+    dfa = create_profile_dfa(profile_type)
+    delta = dfa.to_dict()
+    state = dfa.start_state
+    path = [str(state)]
+    for token in sequence:
+        state = delta.get(state, {}).get(Symbol(token))
+        if state is None:
+            break
+        path.append(str(state))
+    return path

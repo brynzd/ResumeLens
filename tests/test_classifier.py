@@ -2,7 +2,7 @@
 
 import pytest
 
-from classifier import create_profile_dfa, evaluate_resume_profile
+from classifier import classify, create_profile_dfa, evaluate_resume_profile, trace
 from extractor import extract_resume_entities
 from normalizer import normalize_qualifications
 from profiles import PROFILES
@@ -99,3 +99,36 @@ def test_automata_are_deterministic_and_match_their_5_tuple(profile, states, sym
 def test_unknown_profile_is_an_error():
     with pytest.raises(ValueError):
         create_profile_dfa("DEVOPS_ENGINEER")
+
+
+def test_classify_evaluates_every_profile():
+    tokens = ["JAVASCRIPT", "REACT", "NODE_JS", "POSTGRESQL", "GIT"]
+    assert classify(tokens) == {
+        "FULL_STACK_DEVELOPER": True,
+        "MACHINE_LEARNING_ENGINEER": False,
+        "FRONTEND_DEVELOPER": False,
+        "DATA_ENGINEER": False,
+    }
+
+
+def test_several_profiles_can_accept_the_same_resume():
+    tokens = ["JAVASCRIPT", "TYPESCRIPT", "VUE", "TAILWIND", "NODE_JS", "POSTGRESQL", "GIT"]
+    accepted = [p for p, ok in classify(tokens).items() if ok]
+    assert accepted == ["FULL_STACK_DEVELOPER", "FRONTEND_DEVELOPER"]
+
+
+def test_no_profile_accepts_an_unqualified_resume():
+    assert not any(classify(["GIT"]).values())
+
+
+def test_trace_of_an_accepted_run():
+    # Mary Jane (docs/automata.md): the extra library and framework loop on q2 and q3.
+    sequence = ["PYTHON", "PANDAS", "NUMPY", "SCIKIT_LEARN", "TENSORFLOW", "SQL", "GIT"]
+    assert trace(sequence, "MACHINE_LEARNING_ENGINEER") == [
+        "q0", "q1", "q2", "q2", "q3", "q3", "q4", "q5",
+    ]
+
+
+def test_trace_stops_at_the_missing_transition():
+    # Data Engineer: after PYTHON the DFA waits for SPARK or AIRFLOW, SQL has no transition.
+    assert trace(["PYTHON", "SQL", "GIT"], "DATA_ENGINEER") == ["q0", "q1"]
