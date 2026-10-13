@@ -1,0 +1,31 @@
+digraph NORMALIZATION_FST {
+    rankdir=LR;
+    node [shape=circle, fontname="Helvetica"];
+    edge [fontname="Helvetica", fontsize=11];
+    start [shape=point];
+    q1 [shape=doublecircle];
+    start -> q0;
+    q0 -> q1 [label="js | javascript | java script / JAVASCRIPT"];
+    q0 -> q1 [label="ts | typescript | type script / TYPESCRIPT"];
+    q0 -> q1 [label="python | python3 / PYTHON"];
+    q0 -> q1 [label="scala / SCALA"];
+    q0 -> q1 [label="react | reactjs | react.js | react js / REACT"];
+    q0 -> q1 [label="angular | angularjs | angular.js | angular js / ANGULAR"];
+    q0 -> q1 [label="vue | vuejs | vue.js | vue js / VUE"];
+    q0 -> q1 [label="css | css3 / CSS"];
+    q0 -> q1 [label="tailwind | tailwindcss | tailwind css / TAILWIND"];
+    q0 -> q1 [label="node | nodejs | node.js | node js / NODE_JS"];
+    q0 -> q1 [label="django / DJANGO"];
+    q0 -> q1 [label="spring boot | springboot | spring-boot / SPRING_BOOT"];
+    q0 -> q1 [label="pandas / PANDAS"];
+    q0 -> q1 [label="numpy | num py / NUMPY"];
+    q0 -> q1 [label="sklearn | scikit-learn | scikit learn | scikitlearn / SCIKIT_LEARN"];
+    q0 -> q1 [label="tensorflow | tensor flow / TENSORFLOW"];
+    q0 -> q1 [label="pytorch | py torch / PYTORCH"];
+    q0 -> q1 [label="spark | apache spark | pyspark / SPARK"];
+    q0 -> q1 [label="airflow | apache airflow / AIRFLOW"];
+    q0 -> q1 [label="postgres | postgresql / POSTGRESQL"];
+    q0 -> q1 [label="mongodb | mongo | mongo db / MONGODB"];
+    q0 -> q1 [label="sql / SQL"];
+    q0 -> q1 [label="git / GIT"];
+}

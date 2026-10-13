@@ -1,0 +1,48 @@
+
+    digraph textX {
+    fontname = "Bitstream Vera Sans"
+    fontsize = 8
+    node[
+        shape=record,
+        style=filled,
+        fillcolor=aliceblue
+    ]
+    nodesep = 0.3
+    edge[dir=black,arrowtail=empty]
+
+
+n1 -> n2 [label="header" arrowtail=diamond dir=both]
+n2[label="{:Header|+headline:str='Machine Learning Eng...'\l+location:str='New York, New York'\l+summary:str='Engineer focused on ...'\l}"]
+n1 -> n3 [label="contact" arrowtail=diamond dir=both]
+n3[label="{:Contact|+email:str='mary.jane@empirestat...'\l+phone:str='+1 212 555 0134'\l}"]
+n1 -> n4 [label="skills" arrowtail=diamond dir=both]
+n4[label="{:Skills|+items:list=['PYTHON','PANDAS','NUMPY','SCIKIT_LEARN','TENSORFLOW','SQL','GIT']\l}"]
+n1 -> n5 [label="experiences" arrowtail=diamond dir=both]
+n5 -> n6 [label="items:0" arrowtail=diamond dir=both]
+n6 -> n7 [label="period" arrowtail=diamond dir=both]
+n7[label="{:Period|+start:str='2023-01'\l+end:str='present'\l}"]
+n6 -> n8 [label="tasks:0" arrowtail=diamond dir=both]
+n8[label="{:Task|+description:str='Developed predictive...'\l}"]
+n6 -> n9 [label="tasks:1" arrowtail=diamond dir=both]
+n9[label="{:Task|+description:str='Built data-processin...'\l}"]
+n6[label="{:Experience|+role:str='Machine Learning Eng...'\l+company:str='Oscorp Data Labs'\l+location:str=''\l}"]
+n5[label="{:Experiences|}"]
+n1 -> n10 [label="education" arrowtail=diamond dir=both]
+n10 -> n11 [label="items:0" arrowtail=diamond dir=both]
+n11 -> n12 [label="period" arrowtail=diamond dir=both]
+n12[label="{:Period|+start:str='2019-08'\l+end:str='2023-05'\l}"]
+n11[label="{:Degree|+degree:str='B.Sc. in Computer Sc...'\l+institution:str='Empire State Univers...'\l}"]
+n10[label="{:Education|}"]
+n1 -> n13 [label="classification" arrowtail=diamond dir=both]
+n13 -> n14 [label="items:0" arrowtail=diamond dir=both]
+n14[label="{:Result|+profile:str='FULL_STACK_DEVELOPER'\l+verdict:str='REJECTED'\l}"]
+n13 -> n15 [label="items:1" arrowtail=diamond dir=both]
+n15[label="{:Result|+profile:str='MACHINE_LEARNING_ENG...'\l+verdict:str='ACCEPTED'\l}"]
+n13 -> n16 [label="items:2" arrowtail=diamond dir=both]
+n16[label="{:Result|+profile:str='FRONTEND_DEVELOPER'\l+verdict:str='REJECTED'\l}"]
+n13 -> n17 [label="items:3" arrowtail=diamond dir=both]
+n17[label="{:Result|+profile:str='DATA_ENGINEER'\l+verdict:str='REJECTED'\l}"]
+n13[label="{:Classification|}"]
+n1[label="{Mary Jane Watson:CandidateProfile|}"]
+
+}

@@ -11,50 +11,50 @@
     edge[dir=black,arrowtail=empty]
 
 
-2967134936272[ label="{CandidateProfile|name: STRING\l}"]
+n1[ label="{CandidateProfile|name: STRING\l}"]
 
-2967135974864[ label="{Header|headline: STRING\llocation: STRING\lsummary: STRING\l}"]
+n2[ label="{Header|headline: STRING\llocation: STRING\lsummary: STRING\l}"]
 
-2967135974224[ label="{Contact|email: EMAIL\lphone: PHONE\llinkedin: URL\l}"]
+n3[ label="{Contact|email: EMAIL\lphone: PHONE\llinkedin: URL\l}"]
 
-2967135973072[ label="{Skills|items: list[Qualification]\l}"]
+n4[ label="{Skills|items: list[Qualification]\l}"]
 
-2967135970768[ label="{Languages|}"]
+n5[ label="{Languages|}"]
 
-2967135970256[ label="{Language|name: STRING\llevel: Level\l}"]
+n6[ label="{Language|name: STRING\llevel: Level\l}"]
 
-2967135826640[ label="{Experiences|}"]
+n7[ label="{Experiences|}"]
 
-2967135820752[ label="{Experience|role: STRING\lcompany: STRING\llocation: STRING\l}"]
+n8[ label="{Experience|role: STRING\lcompany: STRING\llocation: STRING\l}"]
 
-2967135819344[ label="{Task|description: STRING\l}"]
+n9[ label="{Task|description: STRING\l}"]
 
-2967135818320[ label="{Period|start: DATE\lend: EndDate\l}"]
+n10[ label="{Period|start: DATE\lend: EndDate\l}"]
 
-2967135816784[ label="{Education|}"]
+n11[ label="{Education|}"]
 
-2967135816016[ label="{Degree|degree: STRING\linstitution: STRING\l}"]
+n12[ label="{Degree|degree: STRING\linstitution: STRING\l}"]
 
-2967135824080[ label="{Classification|}"]
+n13[ label="{Classification|}"]
 
-2967135815632[ label="{Result|profile: Profile\lverdict: Verdict\l}"]
+n14[ label="{Result|profile: Profile\lverdict: Verdict\l}"]
 
 
 
-2967134936272 -> 2967135974864[arrowtail=diamond, dir=both, headlabel="header "]
-2967134936272 -> 2967135974224[arrowtail=diamond, dir=both, headlabel="contact "]
-2967134936272 -> 2967135973072[arrowtail=diamond, dir=both, headlabel="skills "]
-2967134936272 -> 2967135970768[arrowtail=diamond, dir=both, headlabel="languages "]
-2967134936272 -> 2967135826640[arrowtail=diamond, dir=both, headlabel="experiences "]
-2967134936272 -> 2967135816784[arrowtail=diamond, dir=both, headlabel="education "]
-2967134936272 -> 2967135824080[arrowtail=diamond, dir=both, headlabel="classification "]
-2967135970768 -> 2967135970256[arrowtail=diamond, dir=both, headlabel="items 1..*"]
-2967135826640 -> 2967135820752[arrowtail=diamond, dir=both, headlabel="items 1..*"]
-2967135820752 -> 2967135818320[arrowtail=diamond, dir=both, headlabel="period "]
-2967135820752 -> 2967135819344[arrowtail=diamond, dir=both, headlabel="tasks 1..*"]
-2967135816784 -> 2967135816016[arrowtail=diamond, dir=both, headlabel="items 1..*"]
-2967135816016 -> 2967135818320[arrowtail=diamond, dir=both, headlabel="period "]
-2967135824080 -> 2967135815632[arrowtail=diamond, dir=both, headlabel="items 1..*"]
+n1 -> n2[arrowtail=diamond, dir=both, headlabel="header "]
+n1 -> n3[arrowtail=diamond, dir=both, headlabel="contact "]
+n1 -> n4[arrowtail=diamond, dir=both, headlabel="skills "]
+n1 -> n5[arrowtail=diamond, dir=both, headlabel="languages "]
+n1 -> n7[arrowtail=diamond, dir=both, headlabel="experiences "]
+n1 -> n11[arrowtail=diamond, dir=both, headlabel="education "]
+n1 -> n13[arrowtail=diamond, dir=both, headlabel="classification "]
+n5 -> n6[arrowtail=diamond, dir=both, headlabel="items 1..*"]
+n7 -> n8[arrowtail=diamond, dir=both, headlabel="items 1..*"]
+n8 -> n10[arrowtail=diamond, dir=both, headlabel="period "]
+n8 -> n9[arrowtail=diamond, dir=both, headlabel="tasks 1..*"]
+n11 -> n12[arrowtail=diamond, dir=both, headlabel="items 1..*"]
+n12 -> n10[arrowtail=diamond, dir=both, headlabel="period "]
+n13 -> n14[arrowtail=diamond, dir=both, headlabel="items 1..*"]
 match_rules [ shape=plaintext, label=< <table>
 	<tr>
 		<td><b>CANON</b></td><td>[A-Z][A-Z0-9_]*</td>
@@ -63,7 +63,7 @@ match_rules [ shape=plaintext, label=< <table>
 		<td><b>Comment</b></td><td>\/\/.*$|\/\*[\s\S]*?\*\/</td>
 	</tr>
 	<tr>
-		<td><b>DATE</b></td><td>\d{4}-\d{2}(-\d{2})?</td>
+		<td><b>DATE</b></td><td>\d{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?</td>
 	</tr>
 	<tr>
 		<td><b>EMAIL</b></td><td>[A-Za-z0-9_.+-]+@[A-Za-z0-9-]+\.[A-Za-z0-9.-]+</td>
