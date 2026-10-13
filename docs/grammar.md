@@ -116,3 +116,6 @@ Verdict          ::= "ACCEPTED" | "REJECTED" ;
 | `A { "," A }` | `items+=A[',']` | one or more, separated by commas |
 | `Rule ::= …` | `Rule: … ;` | a rule; an assignment such as `name=STRING` becomes an attribute of the metamodel class |
 | terminal | match rule (`DATE: /…/;`) or string literal (`'skills'`) | lexical element |
+
+The Chomsky Normal Form of the `classification` part of this grammar (RAA3) is
+derived step by step in [`normal_forms.md`](normal_forms.md).
