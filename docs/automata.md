@@ -57,18 +57,18 @@ changing the recognized language.
 ## 1. Full Stack Developer
 
 **Pattern:** language (JS/TS) → frontend framework → backend technology →
-database → version control.
+database (SQL or NoSQL) → version control.
 
 **M₁ = (Q, Σ, δ, q₀, F)** with
 
 - **Q** = {q₀, q₁, q₂, q₃, q₄, q₅}
 - **Σ** = {JAVASCRIPT, TYPESCRIPT, REACT, ANGULAR, VUE, NODE_JS, DJANGO,
-  SPRING_BOOT, POSTGRESQL, MONGODB, GIT}
+  SPRING_BOOT, POSTGRESQL, MONGODB, SQL, GIT}
 - **q₀** = q₀ (initial state)
 - **F** = {q₅}
 - **δ** (transition function; every listed symbol of a row behaves the same):
 
-| State | JAVASCRIPT, TYPESCRIPT | REACT, ANGULAR, VUE | NODE_JS, DJANGO, SPRING_BOOT | POSTGRESQL, MONGODB | GIT |
+| State | JAVASCRIPT, TYPESCRIPT | REACT, ANGULAR, VUE | NODE_JS, DJANGO, SPRING_BOOT | POSTGRESQL, MONGODB, SQL | GIT |
 |---|---|---|---|---|---|
 | → q₀ | q₁ | — | — | — | — |
 | q₁ | q₁ | q₂ | — | — | — |

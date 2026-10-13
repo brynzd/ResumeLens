@@ -11,8 +11,8 @@ digraph FULL_STACK_DFA {
     q2 -> q2 [label="REACT | ANGULAR | VUE"];
     q2 -> q3 [label="NODE_JS | DJANGO | SPRING_BOOT"];
     q3 -> q3 [label="NODE_JS | DJANGO | SPRING_BOOT"];
-    q3 -> q4 [label="POSTGRESQL | MONGODB"];
-    q4 -> q4 [label="POSTGRESQL | MONGODB"];
+    q3 -> q4 [label="POSTGRESQL | MONGODB | SQL"];
+    q4 -> q4 [label="POSTGRESQL | MONGODB | SQL"];
     q4 -> q5 [label="GIT"];
     q5 -> q5 [label="GIT"];
 }

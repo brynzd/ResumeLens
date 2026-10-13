@@ -18,7 +18,7 @@ PROFILE_PATTERNS = {
         ("language", ["JAVASCRIPT", "TYPESCRIPT"]),
         ("frontend", ["REACT", "ANGULAR", "VUE"]),
         ("backend", ["NODE_JS", "DJANGO", "SPRING_BOOT"]),
-        ("database", ["POSTGRESQL", "MONGODB"]),
+        ("database", ["POSTGRESQL", "MONGODB", "SQL"]),
         ("version_control", ["GIT"]),
     ],
     "MACHINE_LEARNING_ENGINEER": [
