@@ -104,7 +104,7 @@ URL: /https?:\/\/[A-Za-z0-9\-._~:\/?#@!$&'()*+=%]+/;
 DATE: /\d{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?/;
 CANON: /[A-Z][A-Z0-9_]*/;
 
-// Ignorar comentarios estilo C++ / Java en archivos .dsl
+// C++ / Java style comments (// line, /* block */) are ignored in .resume files
 Comment:
     /\/\/.*$/ | /\/\*[\s\S]*?\*\//
 ;

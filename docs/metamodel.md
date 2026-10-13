@@ -168,3 +168,17 @@ candidate.languages                          # None
 
 and that is exactly what the visualization generator does to produce the candidate's
 HTML or Markdown card.
+
+## The other examples
+
+The same decomposition for the other two examples. `resume_02` (Mary Jane Watson) has the
+shape of `resume_01` with a phone instead of a LinkedIn URL; `resume_03` (Peter Parker)
+adds the optional `Languages` node with two `Language` objects, two `Experience` objects
+(the second one without tasks), two `Degree` objects and two `ACCEPTED` results.
+
+![Model of the Mary Jane Watson document](diagrams/resume_02_tree.dot.png)
+
+![Model of the Peter Parker document](diagrams/resume_03_tree.dot.png)
+
+Every diagram of this document is generated from the grammar and the examples by
+`python src/diagrams.py`.

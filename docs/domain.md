@@ -43,15 +43,17 @@ profile automata.
 Means of reaching the candidate: **email**, **phone**, **LinkedIn URL**, each is optional
 because résumés frequently omit one or more, but each one that is present must have a
 valid shape, this is where stage 1's contact-extraction patterns (FR-05) are re-checked
-by the grammar's lexical tokens.
+by the grammar's lexical tokens. A candidate needs at least one of the three (a semantic
+rule of the validator).
 
 ### Qualification / Skill
 
 A technology, tool or capability the candidate claims to have. In the domain of the DSL a
-skill is **always canonical**: the stage-2 transducers have already collapsed
-`JS`, `Javascript`, `JavaScript` into `JAVASCRIPT` (FR-10), duplicates are removed
-(FR-13) and the list is in the canonical order of the profile being evaluated (FR-14).
-The DSL therefore never sees `React.js`; it sees `REACT`.
+skill is **always canonical**: the stage-2 transducer has already collapsed
+`JS`, `Javascript`, `JavaScript` into `JAVASCRIPT` (FR-10) and duplicates are removed
+(FR-13). The document lists the skills in the global canonical order of the table below;
+each profile automaton receives its own projection of that list, sorted in the
+profile's canonical order (FR-14). The DSL therefore never sees `React.js`; it sees `REACT`.
 
 The known canonical vocabulary, grouped by the categories the four profiles use:
 
@@ -96,7 +98,7 @@ One of the professional profiles ResumeLens evaluates (FR-02). Four are supporte
 
 | Profile | Pattern (canonical order) |
 |---|---|
-| `FULL_STACK_DEVELOPER` | Frontend - Backend - Database - Version control |
+| `FULL_STACK_DEVELOPER` | Language - Frontend - Backend - Database - Version control |
 | `MACHINE_LEARNING_ENGINEER` | Language - Data - ML framework - Database - Version control |
 | `FRONTEND_DEVELOPER` | Language - UI framework - Styling - Version control |
 | `DATA_ENGINEER` | Language - Pipelines - Database - Version control |
@@ -129,7 +131,7 @@ flowchart TB
     PER["Period<br/>start · end | present"]
     CLS["Classification"]
     RES["Result<br/>profile → verdict"]
-    PROF{{"Profile<br/>FULL_STACK · ML_ENGINEER<br/>FRONTEND · DATA_ENGINEER"}}
+    PROF{{"Profile<br/>FULL_STACK_DEVELOPER · MACHINE_LEARNING_ENGINEER<br/>FRONTEND_DEVELOPER · DATA_ENGINEER · UNQUALIFIED"}}
     VER{{"Verdict<br/>ACCEPTED · REJECTED"}}
 
     CAND --> HDR
@@ -164,12 +166,16 @@ flowchart LR
     S3 -->|"verdict per profile"| DSL
 ```
 
-| Concept | Produced by | Requirements |
-|---|---|---|
-| Candidate name, Header, Contact, Experience, Degree, Language | Stage 1 - extraction | FR-05, FR-07, FR-08 |
-| Skill (canonical) | Stage 2 - normalization | FR-10, FR-13, FR-14 |
-| Classification, Result, Verdict | Stage 3 - recognition | FR-15, FR-16 |
-| Whole document | Stage 4 - generation, parsing, validation, visualization | FR-18 – FR-22 |
+| Concept | Produced by | Module | Requirements |
+|---|---|---|---|
+| Candidate name, Header, Contact, Experience, Degree, Language | Stage 1 - extraction | `src/extractor.py` | FR-05, FR-07, FR-08 |
+| Skill (canonical) | Stage 2 - normalization | `src/normalizer.py` | FR-10, FR-13, FR-14 |
+| Classification, Result, Verdict | Stage 3 - recognition | `src/classifier.py` | FR-15, FR-16 |
+| Whole document | Stage 4 - generation, parsing, validation, visualization | `src/dsl_generator.py`, `src/parser.py`, `src/validator.py`, `src/markdown_generator.py` | FR-18 – FR-22 |
+
+A mandatory concept the résumé does not provide (for example the contact information of
+the two reference fragments of the assignment) is not invented: the generated document
+leaves it empty and the grammar rejects it as an incomplete candidate profile.
 
 ## Boundaries of the domain
 

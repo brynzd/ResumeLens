@@ -2,7 +2,7 @@
 
 - FR-01 The system shall accept a résumé as plain text (file or pasted text).
 
-- FR-02 The system shall support four profiles: Full Stack Developer, Machine Learning Engineer, Front-end Engineer and Data engineer.
+- FR-02 The system shall support four profiles: Full Stack Developer, Machine Learning Engineer, Frontend Developer and Data Engineer.
 
 - FR-03 The system shall process all four profiles through a single general pipeline, with each profile defined as data (normalization rules, canonical order, automaton) rather than as a separate implementation.
 

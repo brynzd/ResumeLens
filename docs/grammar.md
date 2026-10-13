@@ -75,3 +75,44 @@ Profile          ::= "FULL_STACK_DEVELOPER"
                    | "UNQUALIFIED" ;
 
 Verdict          ::= "ACCEPTED" | "REJECTED" ;
+
+## Structural characteristics
+
+- **One root, fixed order.** A document describes exactly one candidate: the
+  `candidate` block contains its sections in a fixed sequence (header, contact,
+  skills, languages, experience, education, classification). A section out of
+  order is a syntax error (`tests/invalid/syn_wrong_section_order.resume`).
+- **Optional parts.** `[ … ]` marks the parts a résumé may omit: the summary,
+  each contact field and the whole `languages` section.
+- **Repetition.** `{ … }` after a first occurrence means *one or more*: skills,
+  languages, experiences, tasks, degrees and classification results. Skills are
+  **separated** by commas (`A, B, C`, no trailing comma), while languages,
+  degrees, results and the header and contact fields are **terminated** by `;`.
+- **Bounded nesting.** Blocks are delimited by `{ … }` and nest at most three
+  levels: candidate → section → experience → tasks. There is no recursive rule,
+  so the nesting depth of a document is fixed by the grammar.
+- **Closed vocabularies.** `Level`, `Profile` and `Verdict` are alternatives of
+  keywords, so the parser itself rejects an unknown profile or verdict, and
+  `EndDate` is a date or the keyword `present`.
+- **Lexical layer.** The terminals `EMAIL`, `PHONE`, `URL`, `DATE` and `CANON`
+  are regular expressions (textX match rules) that constrain the shape of the
+  text; `STRING` is a quoted string. `//` and `/* … */` comments are ignored
+  anywhere.
+- **Semantic layer.** What a context-free grammar cannot express is checked on
+  the parsed model by [`src/validator.py`](../src/validator.py): non-empty name,
+  headline and location; at least one contact field; periods that do not end
+  before they start; unique skills from the canonical vocabulary; each profile
+  classified once, `UNQUALIFIED` never accepted together with a profile, and
+  every verdict equal to the one its stage-3 automaton gives for the skills.
+
+## From EBNF to textX
+
+| EBNF | textX (`grammar/resume.tx`) | Meaning |
+|---|---|---|
+| `A B` | `A B` | sequence |
+| `A \| B` | `A \| B` | alternative (ordered choice: textX parses with a PEG) |
+| `[ A ]` | `A?` or `( … )?` | optional |
+| `A { A }` | `items+=A` | one or more |
+| `A { "," A }` | `items+=A[',']` | one or more, separated by commas |
+| `Rule ::= …` | `Rule: … ;` | a rule; an assignment such as `name=STRING` becomes an attribute of the metamodel class |
+| terminal | match rule (`DATE: /…/;`) or string literal (`'skills'`) | lexical element |
