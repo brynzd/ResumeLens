@@ -31,8 +31,9 @@ All four automata share the same shape:
   **rejected** (missing category, or category out of order).
 
 The patterns are data (`PROFILE_PATTERNS` in
-[`src/classifier.py`](../src/classifier.py)) and a single generic constructor
-builds the DFA for each profile, as required by FR-03.
+[`src/profiles.py`](../src/profiles.py), the same data stage 2 sorts with) and
+a single generic constructor builds the DFA for each profile, as required by
+FR-03.
 
 ## Type of automaton
 

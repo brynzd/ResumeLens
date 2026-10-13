@@ -1,42 +1,14 @@
 from pyformlang.finite_automaton import DeterministicFiniteAutomaton, State, Symbol
 
-# Each profile pattern is an ordered list of qualification categories.
-# A resume satisfies the profile when its normalized, canonically sorted
-# qualification sequence contains at least one symbol of every category,
-# in category order. Extra qualifications of the same category are absorbed
-# by self-loops, so an over-qualified candidate is still accepted.
+# Each profile pattern (src/profiles.py) is an ordered list of qualification
+# categories. A resume satisfies the profile when its normalized, canonically
+# sorted qualification sequence contains at least one symbol of every
+# category, in category order. Extra qualifications of the same category are
+# absorbed by self-loops, so an over-qualified candidate is still accepted.
 #
-# The categories follow the canonical orders defined in normalizer.py
-# (CANONICAL_ORDERS), which guarantees the input sequence always arrives
-# category by category.
-PROFILE_PATTERNS = {
-    "FULL_STACK": [
-        ("language", ["JAVASCRIPT", "TYPESCRIPT"]),
-        ("frontend", ["REACT", "ANGULAR", "VUE"]),
-        ("backend", ["NODE_JS", "DJANGO", "SPRING_BOOT"]),
-        ("database", ["POSTGRESQL", "MONGODB"]),
-        ("version_control", ["GIT"]),
-    ],
-    "MACHINE_LEARNING": [
-        ("language", ["PYTHON"]),
-        ("data_processing", ["PANDAS", "NUMPY"]),
-        ("ml_framework", ["SCIKIT_LEARN", "TENSORFLOW", "PYTORCH"]),
-        ("database", ["POSTGRESQL", "SQL"]),
-        ("version_control", ["GIT"]),
-    ],
-    "FRONTEND": [
-        ("language", ["JAVASCRIPT", "TYPESCRIPT"]),
-        ("framework", ["REACT", "ANGULAR", "VUE"]),
-        ("styling", ["CSS", "TAILWIND"]),
-        ("version_control", ["GIT"]),
-    ],
-    "DATA_ENGINEER": [
-        ("language", ["PYTHON", "SCALA"]),
-        ("pipeline", ["SPARK", "AIRFLOW"]),
-        ("database", ["POSTGRESQL", "SQL"]),
-        ("version_control", ["GIT"]),
-    ],
-}
+# Stage 2 sorts with the same categories (normalizer.CANONICAL_ORDERS), which
+# guarantees the input sequence always arrives category by category.
+from profiles import PROFILE_PATTERNS
 
 
 def create_profile_dfa(profile_type: str) -> DeterministicFiniteAutomaton:

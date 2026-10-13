@@ -1,13 +1,15 @@
 import sys
 from pathlib import Path
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+
+# The modules in src/ import each other by name (python src/parser.py style).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 import streamlit as st
-import pandas as pd
-import json
-from src.extractor import extract_resume_entities, save_extracted_data
-from src.normalizer import normalize_qualifications
-from src.classifier import evaluate_resume_profile
+
+from classifier import evaluate_resume_profile
 from extractor import extract_resume_entities, save_extracted_data
+from normalizer import normalize_qualifications
+from profiles import PROFILES
 
 # 1. Page Configuration (Following Streamlit Guide structure)
 st.set_page_config(
@@ -42,10 +44,7 @@ else:
     if uploaded_file is not None:
         resume_text = uploaded_file.read().decode("utf-8")
 
-target_profile = st.sidebar.selectbox(
-    "Target Professional Profile",
-    ("FULL_STACK", "MACHINE_LEARNING", "FRONTEND", "DATA_ENGINEER")
-)
+target_profile = st.sidebar.selectbox("Target Professional Profile", PROFILES)
 
 if st.sidebar.button("Run Pipeline"):
     if not resume_text.strip():

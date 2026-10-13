@@ -1,34 +1,14 @@
 from pyformlang.fst import FST
 from pyformlang.finite_automaton import State, Symbol
 
-# Canonical orders defined for the 4 professional profiles of the project
+from profiles import PROFILE_PATTERNS
+
+# Canonical order of every profile: the tokens of its categories, category
+# by category (src/profiles.py). Sorting with it makes the sequence the
+# stage-3 automaton reads independent of the order of the résumé.
 CANONICAL_ORDERS = {
-    "FULL_STACK": [
-        "JAVASCRIPT", "TYPESCRIPT",
-        "REACT", "ANGULAR", "VUE",
-        "NODE_JS", "DJANGO", "SPRING_BOOT",
-        "POSTGRESQL", "MONGODB",
-        "GIT"
-    ],
-    "MACHINE_LEARNING": [
-        "PYTHON",
-        "PANDAS", "NUMPY",
-        "SCIKIT_LEARN", "TENSORFLOW", "PYTORCH",
-        "POSTGRESQL", "SQL",
-        "GIT"
-    ],
-    "FRONTEND": [
-        "JAVASCRIPT", "TYPESCRIPT",
-        "REACT", "ANGULAR", "VUE",
-        "CSS", "TAILWIND",
-        "GIT"
-    ],
-    "DATA_ENGINEER": [
-        "PYTHON", "SCALA",
-        "SPARK", "AIRFLOW",
-        "POSTGRESQL", "SQL",
-        "GIT"
-    ]
+    profile: [token for _category, tokens in pattern for token in tokens]
+    for profile, pattern in PROFILE_PATTERNS.items()
 }
 
 def create_normalization_fst() -> FST:
