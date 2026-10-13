@@ -80,16 +80,17 @@ if "extracted_data" in st.session_state:
         st.subheader("Structured Resume Information")
         data = st.session_state["extracted_data"]
 
+        years = data["experience_years"]
         col1, col2 = st.columns(2)
         with col1:
-            st.metric(label="Candidate Name", value=data.get("name", "Unknown"))
-            st.metric(label="Email", value=data.get("email", "Unknown"))
+            st.metric(label="Candidate Name", value=data["personal"]["name"] or "Unknown")
+            st.metric(label="Email", value=data["contact"]["email"] or "Unknown")
         with col2:
-            st.metric(label="Phone", value=data.get("phone", "Unknown"))
-            st.metric(label="Years of Experience", value=data.get("experience_years", "0"))
+            st.metric(label="Phone", value=data["contact"]["phone"] or "Unknown")
+            st.metric(label="Years of Experience", value=years if years is not None else "Unknown")
 
         st.markdown("**Education Background:**")
-        st.write(", ".join(data.get("education", [])) if data.get("education") else "None detected")
+        st.write(", ".join(data["academic_qualifications"]) or "None detected")
 
         st.markdown("**Raw Extracted Technologies:**")
         st.write(data.get("technologies", []))
