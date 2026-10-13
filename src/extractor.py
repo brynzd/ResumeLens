@@ -78,6 +78,15 @@ SKILLS = re.compile(
     re.IGNORECASE,
 )
 
+# The list after "Skills:" or "Technical Skills:", on the same line or the
+# next one. Its items that no skill pattern recognizes ("COBOL") are kept as
+# unrecognized, so stage 2 can report them instead of losing them silently.
+SKILLS_LIST = re.compile(
+    r"^[ \t]*(?:technical[ \t]+)?skills[ \t]*:[ \t]*\n?[ \t]*(?P<items>[^\n]+)",
+    re.MULTILINE | re.IGNORECASE,
+)
+LIST_SEPARATOR = re.compile(r"[ \t]*[,;][ \t]*")
+
 # Descriptive phrases that are qualifications but not tools (FR-07).
 OTHER_QUALIFICATIONS = re.compile(
     r"\b(?:rest(?:ful)?[ \t]+apis?|(?:predictive|machine[ \t-]learning)[ \t]+models?"
@@ -131,6 +140,15 @@ def unique(items):
     return list(dict.fromkeys(items))
 
 
+def unrecognized_skills(text):
+    """Items of the skills list that are not, as a whole, a known skill."""
+    listed = SKILLS_LIST.search(text)
+    if not listed:
+        return []
+    items = LIST_SEPARATOR.split(listed["items"].strip().rstrip("."))
+    return [item for item in items if item and not SKILLS.fullmatch(item)]
+
+
 def split_sections(text):
     """Return {'experience': text, 'education': text, ...} for the headed sections."""
     parts = SECTION.split(text)
@@ -167,6 +185,7 @@ def extract_resume_entities(text_content: str) -> dict:
     skills = {category: [] for category in SKILL_PATTERNS}
     for match in SKILLS.finditer(text_content):
         skills[match.lastgroup].append(match.group())
+    skills["unrecognized"] = unrecognized_skills(text_content)
 
     def first(pattern):
         found = pattern.search(text_content)
@@ -185,8 +204,11 @@ def extract_resume_entities(text_content: str) -> dict:
             "linkedin": first(LINKEDIN),
         },
         "skills": {category: unique(found) for category, found in skills.items()},
-        # Every skill string in order of appearance: the input of stage 2.
-        "technologies": unique(m.group() for m in SKILLS.finditer(text_content)),
+        # Every skill string in order of appearance, then the unrecognized
+        # items of the skills list: the input of stage 2.
+        "technologies": unique(
+            [m.group() for m in SKILLS.finditer(text_content)] + skills["unrecognized"]
+        ),
         "other_qualifications": unique(m.group() for m in OTHER_QUALIFICATIONS.finditer(text_content)),
         "academic_qualifications": unique(m.group() for m in ACADEMIC.finditer(text_content)),
         "experience_years": int(years["years"]) if years else None,

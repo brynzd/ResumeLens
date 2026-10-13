@@ -80,7 +80,18 @@ def test_skills_are_grouped_by_category():
         "frameworks_libraries": ["React.js", "NodeJS"],
         "databases": ["Postgres"],
         "tools": ["Git"],
+        "unrecognized": [],
     }
+
+
+@pytest.mark.parametrize("text", [
+    "Bart Simpson\nTechnical Skills:\nGit, COBOL",
+    "Bart Simpson\nSkills: Git; COBOL.",
+])
+def test_listed_skills_no_pattern_knows_are_kept_as_unrecognized(text):
+    data = extract_resume_entities(text)
+    assert data["skills"]["unrecognized"] == ["COBOL"]
+    assert data["technologies"] == ["Git", "COBOL"]
 
 
 @pytest.mark.parametrize("text, expected", [
