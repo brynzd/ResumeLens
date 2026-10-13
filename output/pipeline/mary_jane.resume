@@ -1,0 +1,32 @@
+candidate "Mary Jane Watson" {
+    headline: "Machine Learning Engineer";
+    location: "New York, New York";
+    summary: "Engineer focused on predictive models and data-processing pipelines.";
+
+    contact {
+        email: mary.jane@empirestate.edu;
+        phone: +1 212 555 0134;
+    }
+
+    skills {
+        PYTHON, PANDAS, NUMPY, SCIKIT_LEARN, TENSORFLOW, SQL, GIT
+    }
+
+    experience {
+        role "Machine Learning Engineer" at "Oscorp Data Labs" from 2023-01 to present {
+            - "Developed predictive models for photo-analysis workflows."
+            - "Built data-processing pipelines with Python and SQL."
+        }
+    }
+
+    education {
+        "B.Sc. in Computer Science" at "Empire State University" from 2019-08 to 2023-05;
+    }
+
+    classification {
+        FULL_STACK_DEVELOPER -> REJECTED;
+        MACHINE_LEARNING_ENGINEER -> ACCEPTED;
+        FRONTEND_DEVELOPER -> REJECTED;
+        DATA_ENGINEER -> REJECTED;
+    }
+}

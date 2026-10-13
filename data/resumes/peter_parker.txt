@@ -1,0 +1,26 @@
+Peter Parker
+Headline: Frontend Developer
+Location: Queens, New York
+Email: peter.parker@dailybugle.com
+Phone: +1 718 555 0110
+LinkedIn: https://linkedin.com/in/peter-parker-queens
+Summary: Frontend developer who also maintains the Node.js services behind the photo desk.
+
+4 years of experience building web applications.
+
+Technical Skills:
+JavaScript, TypeScript, Vue.js, Tailwind CSS, Node.js, PostgreSQL, Git
+
+Languages:
+English: native
+Spanish: professional
+
+Experience:
+Frontend Developer at Daily Bugle (2023-03-01 - present)
+- Rebuilt the photo gallery with Vue.js and Tailwind CSS.
+- Wrote the Node.js service that publishes photos to PostgreSQL.
+Web Intern at Oscorp (2022-06 - 2022-12)
+
+Education:
+B.Sc. in Physics at Empire State University (2018-08 - 2022-05)
+Web Development Diploma at Midtown Online School (2021-01 - 2021-06)

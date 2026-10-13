@@ -1,0 +1,21 @@
+Lisa Simpson
+Headline: Data Engineer
+Location: Springfield, Oregon
+Email: lisa.simpson@springfield.edu
+LinkedIn: https://linkedin.com/in/lisa-simpson-springfield
+
+5 years of experience building batch and streaming data pipelines.
+
+Technical Skills:
+Python, Apache Spark, Airflow, PostgreSQL, Git
+
+Experience:
+Data Engineer at Springfield Nuclear Plant (2023-02-01 - present)
+- Built Airflow pipelines that load sensor data into PostgreSQL.
+- Migrated nightly batch jobs from cron scripts to Spark.
+Data Analyst at Kwik-E-Mart (2020-06 - 2023-01)
+- Automated weekly sales reports with Python.
+
+Education:
+M.Sc. in Data Science at Springfield University (2018-08 - 2020-05)
+B.Sc. in Computer Science at Springfield University (2014-08 - 2018-05)

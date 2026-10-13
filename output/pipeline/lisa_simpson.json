@@ -1,0 +1,80 @@
+{
+    "personal": {
+        "name": "Lisa Simpson",
+        "headline": "Data Engineer",
+        "location": "Springfield, Oregon",
+        "summary": null
+    },
+    "contact": {
+        "email": "lisa.simpson@springfield.edu",
+        "phone": null,
+        "linkedin": "https://linkedin.com/in/lisa-simpson-springfield"
+    },
+    "skills": {
+        "programming_languages": [
+            "Python"
+        ],
+        "frameworks_libraries": [],
+        "databases": [
+            "PostgreSQL"
+        ],
+        "tools": [
+            "Apache Spark",
+            "Airflow",
+            "Git",
+            "Spark"
+        ],
+        "unrecognized": []
+    },
+    "technologies": [
+        "Python",
+        "Apache Spark",
+        "Airflow",
+        "PostgreSQL",
+        "Git",
+        "Spark"
+    ],
+    "other_qualifications": [],
+    "academic_qualifications": [
+        "M.Sc.",
+        "B.Sc.",
+        "Computer Science"
+    ],
+    "experience_years": 5,
+    "experience": [
+        {
+            "title": "Data Engineer",
+            "organization": "Springfield Nuclear Plant",
+            "start": "2023-02-01",
+            "end": "present",
+            "tasks": [
+                "Built Airflow pipelines that load sensor data into PostgreSQL.",
+                "Migrated nightly batch jobs from cron scripts to Spark."
+            ]
+        },
+        {
+            "title": "Data Analyst",
+            "organization": "Kwik-E-Mart",
+            "start": "2020-06",
+            "end": "2023-01",
+            "tasks": [
+                "Automated weekly sales reports with Python."
+            ]
+        }
+    ],
+    "education": [
+        {
+            "title": "M.Sc. in Data Science",
+            "organization": "Springfield University",
+            "start": "2018-08",
+            "end": "2020-05"
+        },
+        {
+            "title": "B.Sc. in Computer Science",
+            "organization": "Springfield University",
+            "start": "2014-08",
+            "end": "2018-05"
+        }
+    ],
+    "languages": []
+}

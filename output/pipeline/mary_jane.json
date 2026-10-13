@@ -1,0 +1,70 @@
+{
+    "personal": {
+        "name": "Mary Jane Watson",
+        "headline": "Machine Learning Engineer",
+        "location": "New York, New York",
+        "summary": "Engineer focused on predictive models and data-processing pipelines."
+    },
+    "contact": {
+        "email": "mary.jane@empirestate.edu",
+        "phone": "+1 212 555 0134",
+        "linkedin": null
+    },
+    "skills": {
+        "programming_languages": [
+            "Python"
+        ],
+        "frameworks_libraries": [
+            "Pandas",
+            "NumPy",
+            "Scikit-learn",
+            "TensorFlow"
+        ],
+        "databases": [
+            "SQL"
+        ],
+        "tools": [
+            "Git"
+        ],
+        "unrecognized": []
+    },
+    "technologies": [
+        "Python",
+        "Pandas",
+        "NumPy",
+        "Scikit-learn",
+        "TensorFlow",
+        "SQL",
+        "Git"
+    ],
+    "other_qualifications": [
+        "predictive models",
+        "data-processing pipelines"
+    ],
+    "academic_qualifications": [
+        "B.Sc.",
+        "Computer Science"
+    ],
+    "experience_years": 2,
+    "experience": [
+        {
+            "title": "Machine Learning Engineer",
+            "organization": "Oscorp Data Labs",
+            "start": "2023-01",
+            "end": "present",
+            "tasks": [
+                "Developed predictive models for photo-analysis workflows.",
+                "Built data-processing pipelines with Python and SQL."
+            ]
+        }
+    ],
+    "education": [
+        {
+            "title": "B.Sc. in Computer Science",
+            "organization": "Empire State University",
+            "start": "2019-08",
+            "end": "2023-05"
+        }
+    ],
+    "languages": []
+}

@@ -1,0 +1,13 @@
+Bart Simpson
+Headline: Junior Developer
+Location: Springfield, Oregon
+Phone: +1 541 555 0142
+
+Technical Skills:
+Git, COBOL
+
+Experience:
+IT Assistant at Springfield Elementary (2024-09 - present)
+
+Education:
+High School Diploma at Springfield High School (2020-08 - 2024-06)

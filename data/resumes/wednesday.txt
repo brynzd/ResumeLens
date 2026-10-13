@@ -1,0 +1,19 @@
+Wednesday Addams
+Headline: Full Stack Developer
+Location: Jericho, Vermont
+Email: wednesday@nevermore.edu
+LinkedIn: https://linkedin.com/in/wednesday-addams
+Summary: Investigative software developer with a taste for the macabre.
+
+3 years of experience developing web applications.
+
+Technical Skills:
+JS, React.js, NodeJS, Postgres, Git.
+
+Experience:
+Investigative Software Developer at Nevermore Academy (2022-08 - present)
+- Developed data analysis tools to investigate unusual events around Nevermore.
+- Built REST APIs and a React front end for the academy's incident tracker.
+
+Education:
+Specialization in supernatural investigations at Nevermore Academy (2018-08 - 2022-05)

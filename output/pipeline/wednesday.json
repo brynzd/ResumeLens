@@ -1,0 +1,67 @@
+{
+    "personal": {
+        "name": "Wednesday Addams",
+        "headline": "Full Stack Developer",
+        "location": "Jericho, Vermont",
+        "summary": "Investigative software developer with a taste for the macabre."
+    },
+    "contact": {
+        "email": "wednesday@nevermore.edu",
+        "phone": null,
+        "linkedin": "https://linkedin.com/in/wednesday-addams"
+    },
+    "skills": {
+        "programming_languages": [
+            "JS"
+        ],
+        "frameworks_libraries": [
+            "React.js",
+            "NodeJS",
+            "React"
+        ],
+        "databases": [
+            "Postgres"
+        ],
+        "tools": [
+            "Git"
+        ],
+        "unrecognized": []
+    },
+    "technologies": [
+        "JS",
+        "React.js",
+        "NodeJS",
+        "Postgres",
+        "Git",
+        "React"
+    ],
+    "other_qualifications": [
+        "web applications",
+        "REST APIs"
+    ],
+    "academic_qualifications": [
+        "Specialization"
+    ],
+    "experience_years": 3,
+    "experience": [
+        {
+            "title": "Investigative Software Developer",
+            "organization": "Nevermore Academy",
+            "start": "2022-08",
+            "end": "present",
+            "tasks": [
+                "Developed data analysis tools to investigate unusual events around Nevermore.",
+                "Built REST APIs and a React front end for the academy's incident tracker."
+            ]
+        }
+    ],
+    "education": [
+        {
+            "title": "Specialization in supernatural investigations",
+            "organization": "Nevermore Academy",
+            "start": "2018-08",
+            "end": "2022-05"
+        }
+    ],
+    "languages": []
+}

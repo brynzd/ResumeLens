@@ -1,0 +1,24 @@
+candidate "Mary Jane Watson" {
+    headline: "";
+    location: "";
+
+    contact {
+    }
+
+    skills {
+        PYTHON, PANDAS, NUMPY, SCIKIT_LEARN, TENSORFLOW, SQL, GIT
+    }
+
+    experience {
+    }
+
+    education {
+    }
+
+    classification {
+        FULL_STACK_DEVELOPER -> REJECTED;
+        MACHINE_LEARNING_ENGINEER -> ACCEPTED;
+        FRONTEND_DEVELOPER -> REJECTED;
+        DATA_ENGINEER -> REJECTED;
+    }
+}

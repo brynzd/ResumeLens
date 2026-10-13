@@ -1,0 +1,51 @@
+{
+    "personal": {
+        "name": "Bart Simpson",
+        "headline": "Junior Developer",
+        "location": "Springfield, Oregon",
+        "summary": null
+    },
+    "contact": {
+        "email": null,
+        "phone": "+1 541 555 0142",
+        "linkedin": null
+    },
+    "skills": {
+        "programming_languages": [],
+        "frameworks_libraries": [],
+        "databases": [],
+        "tools": [
+            "Git"
+        ],
+        "unrecognized": [
+            "COBOL"
+        ]
+    },
+    "technologies": [
+        "Git",
+        "COBOL"
+    ],
+    "other_qualifications": [],
+    "academic_qualifications": [
+        "Diploma"
+    ],
+    "experience_years": null,
+    "experience": [
+        {
+            "title": "IT Assistant",
+            "organization": "Springfield Elementary",
+            "start": "2024-09",
+            "end": "present",
+            "tasks": []
+        }
+    ],
+    "education": [
+        {
+            "title": "High School Diploma",
+            "organization": "Springfield High School",
+            "start": "2020-08",
+            "end": "2024-06"
+        }
+    ],
+    "languages": []
+}
