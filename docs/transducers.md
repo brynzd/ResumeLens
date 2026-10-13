@@ -20,7 +20,7 @@ automata ([`automata.md`](automata.md)).
   shared; what depends on the profile is the canonical order used to sort.
 - **Functional.** Every input symbol has exactly one output, and a string
   outside the input alphabet has no transition: the transducer rejects it and
-  the string is reported as **unknown** instead of being guessed (FR-12).
+  the string is reported as **unknown** instead of being guessed.
 
 ## Formal definition
 
@@ -70,10 +70,9 @@ relation is the function
 
 T(M) = { (v, canon(v)) | v ∈ Σ } ⊆ Σ × Γ.
 
-Every spelling of Σ is a string that stage 1 can extract (checked for each one
-in `tests/test_normalizer.py`), and together they cover every string the stage-1
-skill patterns produce, except the tools no profile uses (Docker, Kubernetes,
-AWS, GCP, Terraform).
+Every spelling of Σ is a string that stage 1 can extract, and together they
+cover every string the stage-1 skill patterns produce, except the tools no
+profile uses (Docker, Kubernetes, AWS, GCP, Terraform).
 
 **Type.** M is a deterministic (sequential) transducer: it has a single initial
 state, at most one transition for every pair (state, input symbol), no
@@ -86,28 +85,31 @@ for one transition per input spelling.
 
 ![Normalization transducer](diagrams/fst_normalization.png)
 
-The diagram is generated from `VARIANTS` by `python src/diagrams.py`
-([`diagrams/fst_normalization.dot`](diagrams/fst_normalization.dot)).
+The diagram is generated from `VARIANTS` by `python src/diagrams.py`.
 
 ## Implementation
 
 ```python
-fst = FST()
-q0, q1 = State("q0"), State("q1")
-fst.add_start_state(q0)
-fst.add_final_state(q1)
-for canonical, spellings in VARIANTS.items():
-    for spelling in spellings:
-        fst.add_transition(q0, Symbol(spelling), q1, [Symbol(canonical)])
+def create_normalization_fst():
+    fst = FST()
+    q0 = State("q0")
+    q1 = State("q1")
+    fst.add_start_state(q0)
+    fst.add_final_state(q1)
+    for token, spellings in VARIANTS.items():
+        for spelling in spellings:
+            fst.add_transition(q0, Symbol(spelling), q1, [Symbol(token)])
+    return fst
+
 
 def translate(raw):
-    for output in NORMALIZATION_FST.translate([clean(raw)]):
-        return "".join(str(symbol) for symbol in output)
-    return None          # no transition: the transducer rejects the string
+    outputs = list(NORMALIZATION_FST.translate([clean(raw)]))
+    if not outputs:
+        return None          # no transition: the transducer rejects the string
+    return str(outputs[0][0])
 ```
 
-`create_normalization_fst()` builds the transducer and `NORMALIZATION_FST` is the
-instance the pipeline uses.
+`NORMALIZATION_FST` is the transducer the pipeline uses, built once.
 
 ## Processing
 
@@ -115,12 +117,12 @@ For the skill strings of a résumé, `normalize(raw_technologies)`:
 
 1. writes each string as an input symbol (`clean`);
 2. translates it with the transducer (`translate`);
-3. keeps each canonical token once, in order of first appearance (FR-13), so
-   `JS`, `Javascript` and `JavaScript` give a single `JAVASCRIPT`;
-4. reports the strings without translation as unknown (FR-12).
+3. keeps each canonical token once, in order of first appearance, so `JS`,
+   `Javascript` and `JavaScript` give a single `JAVASCRIPT`;
+4. reports the strings without translation as unknown.
 
-Then, for every profile, `sort_for_profile(tokens, profile)` keeps the tokens of
-the profile's alphabet and sorts them in its **canonical order** (FR-14), so the
+Then, for every profile, `sort_for_profile(tokens, profile)` goes through the
+**canonical order** of the profile and keeps the tokens the résumé has, so the
 result does not depend on the order of the résumé. The canonical order of a
 profile is its categories in order ([`src/profiles.py`](../src/profiles.py)):
 
@@ -141,9 +143,6 @@ Example of the assignment — the résumé lists `Git, NodeJS, JS, Postgres, Rea
 | Machine Learning canonical order | POSTGRESQL, GIT |
 | Frontend canonical order | JAVASCRIPT, REACT, GIT |
 | Data Engineer canonical order | POSTGRESQL, GIT |
-
-The 120 orders in which those five skills can be written all give the same
-Full Stack sequence (`tests/test_normalizer.py`).
 
 ## Transformations
 

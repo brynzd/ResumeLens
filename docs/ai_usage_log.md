@@ -95,6 +95,31 @@ specifications as expected), `python src/pipeline.py data/resumes/*.txt` (the se
 sample résumés), the UI with `streamlit.testing`, and the installation of
 `requirements.txt` with Python 3.12. Bryan reviews these commits before pushing them.
 
+### Session 4 — 2026-10-13: cleanup of the project
+
+**Own content given to the AI:** the repository and the two assignment PDFs.
+
+**Prompts:**
+
+1. "El proyecto ya está realizado, lo que necesito ahora es que limpies todos los archivos basura o que no se usan, aparte de la documentacion. Tener un orden mas establecido entre src, docs y tests, y outputs si se necesita. Deja unicamente los tests que pedia el enunciado, y borra todo tipo de test innecesarios, para dejar mas limpio el proyecto. En cuanto al código en src, elimina o modifica lo que no se usa o innecesario, y elimina todo tipo de comentario irrelevante, o muy largos, y modifica el código, manejando una complejidad mas organizada y facil de entender, que el codigo sea legible. No uses funciones complejas ni nada raro (teniendo como uso lo que se ha visto en el curso y una que otra cosa mas por fuera). Todos estos cambios conllevan cambiar la documentacion, entonces tambien lo revisas, y dejas mucho mas limpio el README. esto lo terminas subiendo en 2 o 3 commits para que yo los pushee. Deja un proyecto mas limpio, claro y facil de entender y leer al momento de revisar por los profesores, evitando asi tambien que se vea muy lleno y generado con IA."
+2. "Y absolutamente todo lo demas se necesita? queria reducir mas archivos en todo el proyecto"
+3. Answers to a question of the AI about which reductions to apply: "Quitar .dot y PDFs", "Fusionar 3 docs" and "Dentro de los 3 commits".
+
+**What the AI produced:** three commits. `test: keep only the tests the assignment
+asks for` leaves one test file per stage and the pipeline (89 tests) and removes the
+tests of the UI, the diagrams and the normal form. `refactor: simplify the source code
+and remove unused files` rewrites `src/` with short functions and plain loops, removes
+unused code, the metamodel notebook, the generated files of `output/pipeline/` and the
+`.gitkeep` files. `docs: update the documentation and simplify the README` brings the
+documents up to date with the code, shortens the README, moves the requirements into
+`design.md` and the domain and the normal form into `grammar.md`, and stops versioning
+the `.dot` sources of the diagrams and the assignment PDFs.
+
+**What we verified:** `python -m pytest` (89 tests) and `python src/validator.py` (31
+of 31 documents as expected); the pipeline gives the same JSON, `.resume` and Markdown
+files as before the refactor for the seven sample résumés, and the UI runs the four
+stages (`streamlit.testing`).
+
 ## Other members
 
 Each member adds here, with the same structure, the interactions they had with

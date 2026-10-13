@@ -1,23 +1,18 @@
 # ResumeLens
-### Formal Language-Based Resume Screening
 
-Computación y Estructuras Discretas III — Universidad Icesi — 2026-2
+Formal language-based résumé screening. Computación y Estructuras Discretas III,
+Universidad Icesi, 2026-2.
 
-ResumeLens is a résumé-screening system that applies formal language models to decide
-whether the qualifications written in a résumé satisfy the pattern of a professional
-profile. It does not rank candidates or make hiring decisions. A résumé goes through
-four stages, each one an explicit formal model:
+ResumeLens reads a plain-text résumé and decides, for each of four professional
+profiles, whether the qualifications written in it satisfy the pattern of the profile.
+It does not rank candidates or make hiring decisions. Each stage uses a formal model:
 
-| Stage | Formal model | What it does | Module | Document |
-|---|---|---|---|---|
-| 1 | Regular expressions (`re`) | extracts contact information, skills, experience, education, … exactly as written | `src/extractor.py` | [`regular_expressions.md`](docs/regular_expressions.md) |
-| 2 | Finite-state transducer (pyformlang) | normalizes every spelling to a canonical token (`JS` → `JAVASCRIPT`) and sorts the tokens in each profile's canonical order | `src/normalizer.py` | [`transducers.md`](docs/transducers.md) |
-| 3 | Deterministic finite automata (pyformlang) | one DFA per profile decides ACCEPTED or REJECTED | `src/classifier.py` | [`automata.md`](docs/automata.md) |
-| 4 | Context-free grammar (textX) | writes the candidate profile document, validates it and renders it as Markdown | `src/dsl_generator.py`, `src/parser.py`, `src/validator.py`, `src/markdown_generator.py` | [`grammar.md`](docs/grammar.md), [`metamodel.md`](docs/metamodel.md) |
-
-```
-résumé.txt ─► regex extraction ─► FST normalization ─► DFA recognition ─► .resume document ─► textX validation ─► Markdown
-```
+| Stage | Formal model | Module | Document |
+|---|---|---|---|
+| 1. Extraction | Regular expressions (`re`) | `extractor.py` | [regular_expressions.md](docs/regular_expressions.md) |
+| 2. Normalization | Finite-state transducer (pyformlang) | `normalizer.py` | [transducers.md](docs/transducers.md) |
+| 3. Recognition | Deterministic finite automata (pyformlang) | `classifier.py` | [automata.md](docs/automata.md) |
+| 4. Candidate profile | Context-free grammar (textX) | `dsl_generator.py`, `parser.py`, `validator.py`, `markdown_generator.py` | [grammar.md](docs/grammar.md), [metamodel.md](docs/metamodel.md) |
 
 ## Team
 
@@ -27,30 +22,24 @@ résumé.txt ─► regex extraction ─► FST normalization ─► DFA recogni
 | Juan Pablo Gamboa | [@JuanPabloGam](https://github.com/JuanPabloGam) |
 | Bryan Moreno Diaz | [@brynzd](https://github.com/brynzd) |
 
-IDE: Visual Studio Code (with the Python and Jupyter extensions).
+IDE: Visual Studio Code.
 
-## The DSL inside ResumeLens
+## The DSL in ResumeLens
 
-The candidate profile DSL is the output side of the pipeline. A `.resume` document is
-the structured, validated record of everything ResumeLens learned about one candidate:
-the information extracted in stage 1, the canonical skills of stage 2 and the verdict
-of every profile from stage 3. `src/dsl_generator.py` writes it from a résumé, and a
-document can also be written by hand. textX parses it with the grammar in
+The candidate profile DSL is the output of the pipeline. A `.resume` document records
+what ResumeLens found about one candidate: the information extracted in stage 1, the
+canonical skills of stage 2 and the verdict of each profile from stage 3.
+`src/dsl_generator.py` writes the document, textX parses it with
 [`grammar/resume.tx`](grammar/resume.tx), the validator rejects it if it breaks a
-lexical, syntactic or semantic rule (including a verdict that contradicts its profile
-automaton), and the Markdown generator renders the valid ones.
+lexical, syntactic or semantic rule, and the Markdown generator renders the valid ones.
 
 ## Language
 
-A candidate document is a single `candidate "Name" { ... }` block with a fixed
-sequence of sections: header (headline, location, optional summary), contact
-(email, phone and/or linkedin), skills (a non-empty list of canonical uppercase
-tokens), an optional languages section, experience and education records with
-`from ... to ...` periods (`present` allowed as end), and a classification that
-pairs each evaluated profile with a verdict. The full EBNF specification and the
-structural characteristics of the language are in [`docs/grammar.md`](docs/grammar.md),
-the metamodel in [`docs/metamodel.md`](docs/metamodel.md) and the domain concepts in
-[`docs/domain.md`](docs/domain.md).
+A document is one `candidate "Name" { ... }` block with its sections in a fixed order:
+header (headline, location and an optional summary), contact (email, phone and/or
+LinkedIn), skills (canonical tokens separated by commas), optional languages,
+experience and education records with their periods, and the classification with the
+verdict of each profile.
 
 ```
 candidate "Wednesday Addams" {
@@ -64,179 +53,130 @@ candidate "Wednesday Addams" {
 }
 ```
 
-### Supported profiles
+### Profiles
 
-| Profile | Pattern (categories in canonical order) |
+| Profile | Pattern |
 |---|---|
-| `FULL_STACK_DEVELOPER` | Language (JS/TS) → Frontend → Backend → Database (SQL or NoSQL) → Git |
-| `MACHINE_LEARNING_ENGINEER` | Python → Data library → ML framework → Database → Git |
-| `FRONTEND_DEVELOPER` (team-defined, software engineering) | Language (JS/TS) → UI framework → Styling → Git |
-| `DATA_ENGINEER` (team-defined, AI/data) | Language (Python/Scala) → Pipeline technology → Database → Git |
+| `FULL_STACK_DEVELOPER` | JavaScript/TypeScript → frontend framework → backend → database → Git |
+| `MACHINE_LEARNING_ENGINEER` | Python → data library → ML framework → database → Git |
+| `FRONTEND_DEVELOPER` (team) | JavaScript/TypeScript → UI framework → styling → Git |
+| `DATA_ENGINEER` (team) | Python/Scala → pipeline technology → database → Git |
 
-The four profiles are data ([`src/profiles.py`](src/profiles.py)) processed by the same
-pipeline; a résumé gets a verdict for each of them, and `UNQUALIFIED` when none accepts.
+The profiles are data in [`src/profiles.py`](src/profiles.py), processed by the same
+pipeline. A résumé that no profile accepts is `UNQUALIFIED`.
 
 ## Project structure
 
 ```
 ResumeLens/
-├── README.md
-├── requirements.txt
-├── pytest.ini
-├── grammar/
-│   └── resume.tx              # textX grammar of the DSL
+├── grammar/resume.tx         textX grammar of the DSL
 ├── src/
-│   ├── extractor.py           # stage 1: regular expressions
-│   ├── normalizer.py          # stage 2: finite-state transducer + canonical order
-│   ├── classifier.py          # stage 3: one DFA per profile
-│   ├── profiles.py            # the four profiles, as data
-│   ├── dsl_generator.py       # writes the .resume document from stages 1-3
-│   ├── parser.py              # stage 4: builds the model of a .resume file
-│   ├── validator.py           # stage 4: lexical, syntactic and semantic validation
-│   ├── markdown_generator.py  # stage 4: Markdown visualization
-│   ├── pipeline.py            # the four stages on a résumé (command line)
-│   ├── app.py                 # web UI (Streamlit)
-│   ├── diagrams.py            # generates docs/diagrams/
-│   └── notebooks/             # runnable metamodel walkthrough (Jupyter)
-├── data/resumes/              # plain-text sample résumés (pipeline input)
-├── examples/                  # résumés written in the DSL (resume_01..03.resume)
-├── output/                    # Markdown of the examples (resume_01..03.md)
-│   └── pipeline/              # what python src/pipeline.py data/resumes/*.txt writes
-├── docs/
-│   ├── requirements.md        # functional requirements
-│   ├── design.md              # modules, functions, inputs and outputs
-│   ├── regular_expressions.md # stage 1
-│   ├── transducers.md         # stage 2: 7-tuple and diagram
-│   ├── automata.md            # stage 3: 5-tuples and diagrams
-│   ├── domain.md              # concepts of the candidate profile DSL
-│   ├── grammar.md             # stage 4: EBNF, terminals, non-terminals, structure
-│   ├── metamodel.md           # metamodel and parsed models
-│   ├── normal_forms.md        # Chomsky Normal Form of part of the grammar (RAA3)
-│   ├── test_cases.md          # test design and scenarios
-│   ├── literature_review.md
-│   ├── ai_usage_log.md        # use of generative AI
-│   ├── diagrams/              # metamodel, parse trees, automata and transducer
-│   ├── poster/                # research poster
-│   └── assignment/            # assignment statements (PDF)
-└── tests/
-    ├── test_*.py              # pytest suite of every stage, the pipeline and the UI
-    ├── valid/                 # specifications textX must accept
-    └── invalid/               # specifications textX must reject
+│   ├── profiles.py           the four profiles
+│   ├── extractor.py          stage 1
+│   ├── normalizer.py         stage 2
+│   ├── classifier.py         stage 3
+│   ├── dsl_generator.py      stage 4: writes the .resume document
+│   ├── parser.py             stage 4: parses a .resume file
+│   ├── validator.py          stage 4: lexical, syntactic and semantic validation
+│   ├── markdown_generator.py stage 4: Markdown visualization
+│   ├── pipeline.py           the four stages from the command line
+│   ├── app.py                web interface (Streamlit)
+│   └── diagrams.py           generates docs/diagrams/
+├── data/resumes/             plain-text résumés, input of the pipeline
+├── examples/                 the three DSL examples
+├── output/                   Markdown of the examples
+├── docs/                     design documents, diagrams and poster
+└── tests/                    pytest suite, and valid/ and invalid/ DSL documents
 ```
 
 ## Requirements
 
-- Python 3.10 or newer (Streamlit 1.64 requires it); tested with Python 3.12 and 3.14.
-- The libraries of [`requirements.txt`](requirements.txt): textX 4.4.0, pyformlang
-  1.0.11, Streamlit 1.64.0, pandas 2.3.3 and pytest 8.4.2.
-- Optional: [Graphviz](https://graphviz.org/download/) (`dot`), only to render the
-  diagrams to PNG (`brew install graphviz` on macOS).
+- Python 3.10 or newer (tested with 3.12 and 3.14).
+- textX 4.4.0, pyformlang 1.0.11, Streamlit 1.64.0, pandas 2.3.3 and pytest 8.4.2
+  ([`requirements.txt`](requirements.txt)).
+- [Graphviz](https://graphviz.org/download/), only to render the diagrams.
 
 ## Installation
 
 ```bash
 git clone https://github.com/brynzd/ResumeLens.git
 cd ResumeLens
-python3 -m venv .venv            # any Python 3.10+, e.g. python3.12 -m venv .venv
+python3 -m venv .venv            # python3 must be 3.10 or newer
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-On macOS the system `python3` may be 3.9; use a newer one (for example
-`python3.12` from Homebrew) to create the virtual environment.
-
 ## Usage
 
-**Web interface** — choose a sample résumé, paste one or upload a `.txt`, and follow
-the four stages (one tab per stage):
+Web interface, with one tab per stage:
 
 ```bash
 streamlit run src/app.py
 ```
 
-**Whole pipeline from the command line** — prints every stage and writes the
-extraction (`.json`), the candidate document (`.resume`) and its Markdown (`.md`) to
+The whole pipeline on plain-text résumés. It prints every stage and writes the
+extracted data (`.json`), the candidate document (`.resume`) and its Markdown to
 `output/pipeline/`:
 
 ```bash
 python src/pipeline.py data/resumes/wednesday.txt
-python src/pipeline.py data/resumes/*.txt
 ```
 
-**Run the parser** on a DSL document (prints a summary of the model, or the error with
-line and column):
+### Run the parser
 
 ```bash
 python src/parser.py examples/resume_01.resume
 ```
 
-**Generate the Markdown** visualization into `output/` (only for a valid document):
+It prints a summary of the model, or the error with its line and column.
+
+### Generate the Markdown
 
 ```bash
 python src/markdown_generator.py examples/resume_01.resume
 ```
 
-**Run the validation suite** (the examples and `tests/valid/` must be accepted,
-`tests/invalid/` rejected, each with its error):
+It validates the document and writes `output/resume_01.md`.
+
+### Validation and tests
 
 ```bash
-python src/validator.py
-```
-
-**Run the tests** of every stage, the pipeline and the UI:
-
-```bash
+python src/validator.py    # examples/ and tests/valid/ accepted, tests/invalid/ rejected
 python -m pytest
 ```
 
-**Regenerate the diagrams** of `docs/diagrams/` (the PNG files need Graphviz):
+### Diagrams
 
 ```bash
-python src/diagrams.py
+python src/diagrams.py     # the PNG files need Graphviz
 ```
 
-## Candidate profile examples
+## Examples
 
-The three examples are the documents the pipeline writes from the plain-text résumés
-of `data/resumes/` (the tests check it); their Markdown is in `output/` and their parse
-trees in `docs/diagrams/`.
+The pipeline generated the three examples from the résumés of `data/resumes/`. Their
+Markdown is in `output/` and their parse trees in `docs/diagrams/`.
 
-- [`resume_01.resume`](examples/resume_01.resume) — **Wednesday Addams**, reference
-  résumé 1 of the assignment (`wednesday.txt`). E-mail and LinkedIn, one experience
-  with two tasks, one degree. Only `FULL_STACK_DEVELOPER` is accepted.
-- [`resume_02.resume`](examples/resume_02.resume) — **Mary Jane Watson**, reference
-  résumé 2 (`mary_jane.txt`). E-mail and phone, seven skills, of which the second data
-  library and ML framework are extras. Only `MACHINE_LEARNING_ENGINEER` is accepted:
-  Data Engineer is rejected because she has no pipeline technology.
-- [`resume_03.resume`](examples/resume_03.resume) — **Peter Parker**, the team-defined
-  Frontend profile (`peter_parker.txt`). Every contact field, a `languages` section,
-  two experiences (the second without tasks), two degrees, a `YYYY-MM-DD` date, and two
-  accepted profiles: `FULL_STACK_DEVELOPER` and `FRONTEND_DEVELOPER`.
-
-`data/resumes/` also has a Data Engineer (`lisa_simpson.txt`), an unqualified candidate
-with an unknown skill (`bart_simpson.txt`) and the two fragments of the assignment
-(`wednesday_fragment.txt`, `mary_jane_fragment.txt`): their profile accepts them, but
-they lack the contact, experience and education a candidate document requires, so
-textX rejects the document as incomplete.
+- [`resume_01.resume`](examples/resume_01.resume): Wednesday Addams, reference résumé 1
+  of the assignment. Only `FULL_STACK_DEVELOPER` is accepted.
+- [`resume_02.resume`](examples/resume_02.resume): Mary Jane Watson, reference résumé 2.
+  Only `MACHINE_LEARNING_ENGINEER` is accepted.
+- [`resume_03.resume`](examples/resume_03.resume): Peter Parker. It uses every contact
+  field, the languages section, two experiences and two degrees, and has two accepted
+  profiles: `FULL_STACK_DEVELOPER` and `FRONTEND_DEVELOPER`.
 
 ## Documentation
 
 | Document | Content |
 |---|---|
-| [`requirements.md`](docs/requirements.md) | functional requirements FR-01 to FR-24 |
-| [`design.md`](docs/design.md) | architecture, modules, functions, inputs and outputs, design decisions |
-| [`regular_expressions.md`](docs/regular_expressions.md) | stage 1: every regular expression and the language it recognizes |
-| [`transducers.md`](docs/transducers.md) | stage 2: the 7-tuple, the diagram and the canonical orders |
-| [`automata.md`](docs/automata.md) | stage 3: the 5-tuple, type, diagram and pattern of each automaton |
-| [`domain.md`](docs/domain.md), [`grammar.md`](docs/grammar.md), [`metamodel.md`](docs/metamodel.md) | stage 4: concepts, EBNF and structure, metamodel and parse trees |
-| [`normal_forms.md`](docs/normal_forms.md) | Chomsky Normal Form of the classification grammar (RAA3) |
-| [`test_cases.md`](docs/test_cases.md) | test design, scenarios and expected results |
-| [`literature_review.md`](docs/literature_review.md) | literature review |
-| [`ai_usage_log.md`](docs/ai_usage_log.md) | record of the use of generative AI |
-| [`poster/POSTER.pdf`](docs/poster/POSTER.pdf) | research poster |
+| [design.md](docs/design.md) | requirements, modules, functions, inputs and outputs |
+| [regular_expressions.md](docs/regular_expressions.md), [transducers.md](docs/transducers.md), [automata.md](docs/automata.md) | formalization of stages 1 to 3 |
+| [grammar.md](docs/grammar.md) | stage 4: domain, EBNF and Chomsky Normal Form of part of the grammar |
+| [metamodel.md](docs/metamodel.md) | stage 4: metamodel and parse trees |
+| [test_cases.md](docs/test_cases.md) | test cases and scenarios |
+| [literature_review.md](docs/literature_review.md) | literature review |
+| [ai_usage_log.md](docs/ai_usage_log.md) | use of generative AI |
+| [POSTER.pdf](docs/poster/POSTER.pdf) | research poster |
 
 ## Authors
 
-- Maria Juliana Marin Shek
-- Juan Pablo Gamboa
-- Bryan Moreno Diaz
+Maria Juliana Marin Shek, Juan Pablo Gamboa and Bryan Moreno Diaz.

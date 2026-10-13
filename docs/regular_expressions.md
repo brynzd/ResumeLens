@@ -3,9 +3,9 @@
 Stage 1 of the ResumeLens pipeline, implemented with Python's `re` module in
 [`src/extractor.py`](../src/extractor.py). It finds the strings of a plain-text
 résumé that may represent candidate data or qualifications and keeps them
-**exactly as written** (FR-08). It does not decide whether two strings are
-equivalent (stage 2, [`transducers.md`](transducers.md)) or whether the candidate
-satisfies a profile (stage 3, [`automata.md`](automata.md)).
+**exactly as written**. It does not decide whether two strings are equivalent
+(stage 2, [`transducers.md`](transducers.md)) or whether the candidate satisfies a
+profile (stage 3, [`automata.md`](automata.md)).
 
 ## Notation
 
@@ -35,10 +35,10 @@ also matches a line break, which made matches spill into the next line.
 |---|---|---|
 | Personal information | `NAME`, `FIELD` | `personal` |
 | Contact information | `EMAIL`, `PHONE`, `LINKEDIN` | `contact` |
-| Programming languages | `SKILL_PATTERNS["programming_languages"]` | `skills.programming_languages` |
-| Frameworks and libraries | `SKILL_PATTERNS["frameworks_libraries"]` | `skills.frameworks_libraries` |
-| Databases | `SKILL_PATTERNS["databases"]` | `skills.databases` |
-| Tools and technologies | `SKILL_PATTERNS["tools"]` | `skills.tools` |
+| Programming languages | `PROGRAMMING_LANGUAGES` (in `SKILLS`) | `skills.programming_languages` |
+| Frameworks and libraries | `FRAMEWORKS_LIBRARIES` (in `SKILLS`) | `skills.frameworks_libraries` |
+| Databases | `DATABASES` (in `SKILLS`) | `skills.databases` |
+| Tools and technologies | `TOOLS` (in `SKILLS`) | `skills.tools` |
 | Other qualifications | `OTHER_QUALIFICATIONS`, `SKILLS_LIST` | `other_qualifications`, `skills.unrecognized` |
 | Academic qualifications | `ACADEMIC`, `ENTRY` | `academic_qualifications`, `education` |
 | Professional experience | `YEARS`, `ENTRY`, `TASK` | `experience_years`, `experience` |
@@ -122,11 +122,6 @@ before another digit.
 Every match is accepted by the `PHONE` terminal of the DSL, so the extracted
 number can be written in the candidate document unchanged.
 
-> **Why the groups are non-capturing.** With a capturing group, `re.findall`
-> returns the group instead of the whole match. The first version of this
-> pattern, `(\+?\d{1,3}[-.\s]?)?…`, therefore turned `+57 3101234567` into
-> `"+57 "` and `3101234567` into `"3"`.
-
 ### LinkedIn — `LINKEDIN`
 
 ```python
@@ -150,10 +145,13 @@ string below is also accepted in any letter case (`JS`, `Js`, `js`, …), and
 | Databases | `postgres(?:ql)?\|mongo(?:[ \t]?db)?\|sql` | postgres, postgresql, mongo, mongodb, mongo␣db, sql |
 | Tools and technologies | `git\|(?:apache[ \t])?spark\|pyspark\|(?:apache[ \t])?airflow\|docker\|kubernetes\|aws\|gcp\|terraform` | git, spark, apache␣spark, pyspark, airflow, apache␣airflow, docker, kubernetes, aws, gcp, terraform |
 
-The four patterns are combined into one, with a named group per category:
+`SKILLS` is the union of the four languages, with a named group per category:
 
 ```python
-SKILLS = r"\b(?:(?P<programming_languages>…)|(?P<frameworks_libraries>…)|(?P<databases>…)|(?P<tools>…))\b"
+SKILLS = (rf"\b(?:(?P<programming_languages>{PROGRAMMING_LANGUAGES})"
+          rf"|(?P<frameworks_libraries>{FRAMEWORKS_LIBRARIES})"
+          rf"|(?P<databases>{DATABASES})"
+          rf"|(?P<tools>{TOOLS}))\b")
 ```
 
 `SKILLS.finditer(text)` scans the text **once, left to right, without
@@ -196,7 +194,7 @@ OTHER_QUALIFICATIONS = (r"\b(?:rest(?:ful)?[ \t]+apis?|(?:predictive|machine[ \t
                         r"|data[ \t-]processing[ \t]+pipelines?|web[ \t]+applications?)\b")
 ```
 
-**Language.** Descriptive phrases that are qualifications but not tools (FR-07):
+**Language.** Descriptive phrases that are qualifications but not tools:
 REST or RESTful API(s), predictive or machine-learning model(s), data-processing
 pipeline(s), web application(s). They are reported, not normalized: no profile
 automaton requires them.
@@ -276,9 +274,9 @@ The level is written as the DSL keyword (`full_professional`).
 ## Output data structure
 
 `extract_resume_entities(text)` returns a dictionary grouped by type of
-information (FR-09); `save_extracted_data(data, path)` stores it as JSON. For
-[`data/resumes/wednesday.txt`](../data/resumes/wednesday.txt)
-([`output/pipeline/wednesday.json`](../output/pipeline/wednesday.json), abridged):
+information, and `save_extracted_data(data, path)` stores it as JSON
+(`python src/pipeline.py` writes it to `output/pipeline/<name>.json`). For
+[`data/resumes/wednesday.txt`](../data/resumes/wednesday.txt), abridged:
 
 ```json
 {

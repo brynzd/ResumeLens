@@ -5,9 +5,9 @@ Formal definition of the four profile automata implemented with
 [`src/classifier.py`](../src/classifier.py). This is Stage 3 of the ResumeLens
 pipeline: it receives the **normalized and canonically sorted** qualification
 sequence produced by Stage 2 ([`transducers.md`](transducers.md)) and decides
-whether the résumé satisfies the accepted pattern of a professional profile
-(FR-02, FR-03). Every résumé is evaluated by the four automata, so zero, one or
-several profiles may accept it (FR-16).
+whether the résumé satisfies the accepted pattern of a professional profile.
+Every résumé is evaluated by the four automata, so zero, one or several profiles
+may accept it.
 
 ## Design of the profile patterns
 
@@ -15,9 +15,9 @@ Every profile is described as an **ordered list of qualification categories**
 (e.g. *language → frontend → backend → database → version control*). A résumé
 satisfies the profile when its qualification sequence contains **at least one
 symbol of every category, in category order**. Because Stage 2 sorts the
-qualifications with the profile's canonical order (`CANONICAL_ORDERS`) and
-removes duplicates, the input sequence always arrives category by category and
-each symbol appears at most once.
+qualifications in the profile's canonical order and removes duplicates, the
+input sequence always arrives category by category and each symbol appears at
+most once.
 
 All four automata share the same shape:
 
@@ -42,9 +42,8 @@ in this language exactly when the résumé has at least one qualification of
 every category of the profile.
 
 The patterns are data (`PROFILE_PATTERNS` in
-[`src/profiles.py`](../src/profiles.py), the same data stage 2 sorts with) and
-a single generic constructor builds the DFA for each profile, as required by
-FR-03.
+[`src/profiles.py`](../src/profiles.py), the same data stage 2 sorts with), and
+a single function builds the DFA of each profile.
 
 ## Type of automaton
 
@@ -202,11 +201,23 @@ every automaton for each résumé.
 
 ## Implementation and diagrams
 
-- Implementation: `create_profile_dfa`, `evaluate_resume_profile`, `classify`
-  and `trace` (the states of a run) in [`src/classifier.py`](../src/classifier.py),
-  using `pyformlang.finite_automaton.DeterministicFiniteAutomaton`.
-- The transition diagrams above are generated from `PROFILE_PATTERNS` by
-  `python src/diagrams.py`, which writes the `.dot` sources in
-  [`diagrams/`](diagrams/) and renders them with Graphviz.
-- `tests/test_classifier.py` checks the examples of this document and the size
-  and determinism of each automaton.
+```python
+def create_profile_dfa(profile):
+    pattern = PROFILE_PATTERNS[profile]
+    states = [State(f"q{i}") for i in range(len(pattern) + 1)]
+
+    dfa = DeterministicFiniteAutomaton()
+    dfa.add_start_state(states[0])
+    dfa.add_final_state(states[-1])
+    for i, (_category, tokens) in enumerate(pattern):
+        for token in tokens:
+            dfa.add_transition(states[i], Symbol(token), states[i + 1])
+            dfa.add_transition(states[i + 1], Symbol(token), states[i + 1])
+    return dfa
+```
+
+[`src/classifier.py`](../src/classifier.py) builds the four automata once
+(`PROFILE_DFAS`). `evaluate_resume_profile` runs one of them on a sequence,
+`classify` gives the verdict of the four, and `trace` lists the states of a run.
+The transition diagrams above are generated from `PROFILE_PATTERNS` by
+`python src/diagrams.py`.
