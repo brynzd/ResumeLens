@@ -1,0 +1,27 @@
+// INVALID - semantic (inconsistent data): DATA_ENGINEER is ACCEPTED, but its automaton rejects
+// PYTHON, SQL, GIT (after PYTHON it needs SPARK or AIRFLOW).
+candidate "Mary Jane Watson" {
+    headline: "Machine Learning Engineer";
+    location: "New York, New York";
+
+    contact {
+        email: mary.jane@empirestate.edu;
+    }
+
+    skills {
+        PYTHON, PANDAS, NUMPY, SCIKIT_LEARN, TENSORFLOW, SQL, GIT
+    }
+
+    experience {
+        role "Machine Learning Engineer" at "Oscorp Data Labs" from 2023-01 to present
+    }
+
+    education {
+        "B.Sc. in Computer Science" at "Empire State University" from 2019-08 to 2023-05;
+    }
+
+    classification {
+        MACHINE_LEARNING_ENGINEER -> ACCEPTED;
+        DATA_ENGINEER -> ACCEPTED;
+    }
+}

@@ -8,7 +8,8 @@ Validation happens at three levels:
 - Semantic: rules the grammar cannot express, checked on the parsed model
   (non-empty name, headline and location; at least one contact method;
   periods that do not end before they start; unique, canonical skills;
-  a consistent classification).
+  a consistent classification whose verdicts are the ones the stage-3
+  profile automata give for the listed skills).
 
 textX enforces the first two levels while parsing (``TextXSyntaxError``). The
 semantic rules are object processors registered on the metamodel
@@ -29,6 +30,7 @@ import sys
 from textx import TextXSemanticError, get_location
 from textx.exceptions import TextXError
 
+from classifier import classify
 from parser import PROJECT_ROOT, get_metamodel
 
 VALID_DIRS = [PROJECT_ROOT / "examples", PROJECT_ROOT / "tests" / "valid"]
@@ -57,6 +59,26 @@ def semantic_error(message, obj):
 def check_candidate(candidate):
     if not candidate.name.strip():
         semantic_error("candidate name cannot be empty", candidate)
+    # textX runs the processor of the root last, after the checks of its
+    # sections, so the skills are already known to be canonical and unique.
+    check_verdicts(candidate)
+
+
+def check_verdicts(candidate):
+    # Each verdict must be the one the profile's DFA gives for the listed
+    # skills, and UNQUALIFIED is ACCEPTED exactly when no profile is.
+    accepted = classify(list(candidate.skills.items))
+    for result in candidate.classification.items:
+        if result.profile == "UNQUALIFIED":
+            expected = "REJECTED" if any(accepted.values()) else "ACCEPTED"
+        else:
+            expected = "ACCEPTED" if accepted[result.profile] else "REJECTED"
+        if result.verdict != expected:
+            semantic_error(
+                f"{result.profile} -> {result.verdict} contradicts the profile automaton,"
+                f" which gives {expected} for these skills",
+                result,
+            )
 
 
 def check_header(header):
