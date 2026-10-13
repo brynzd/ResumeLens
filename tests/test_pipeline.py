@@ -27,6 +27,7 @@ def without_comments(text):
 @pytest.mark.parametrize("resume, example", [
     ("wednesday.txt", "resume_01.resume"),
     ("mary_jane.txt", "resume_02.resume"),
+    ("peter_parker.txt", "resume_03.resume"),
 ])
 def test_pipeline_writes_the_example_documents(metamodel, resume, example):
     # The examples of examples/ are the documents the pipeline generates.
