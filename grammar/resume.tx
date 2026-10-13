@@ -101,7 +101,9 @@ Verdict:
 EMAIL: /[A-Za-z0-9_.+-]+@[A-Za-z0-9-]+\.[A-Za-z0-9.-]+/;
 PHONE: /\+?[0-9][0-9 ()-]{6,}[0-9]/;
 URL: /https?:\/\/[A-Za-z0-9\-._~:\/?#@!$&'()*+=%]+/;
-DATE: /\d{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?/;
+// A date may not be followed by a hyphen or a digit, so 2018-08-32 is reported
+// as an invalid DATE instead of being read as 2018-08 followed by "-32".
+DATE: /\d{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?(?![-\d])/;
 CANON: /[A-Z][A-Z0-9_]*/;
 
 // C++ / Java style comments (// line, /* block */) are ignored in .resume files

@@ -63,7 +63,7 @@ match_rules [ shape=plaintext, label=< <table>
 		<td><b>Comment</b></td><td>\/\/.*$|\/\*[\s\S]*?\*\/</td>
 	</tr>
 	<tr>
-		<td><b>DATE</b></td><td>\d{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?</td>
+		<td><b>DATE</b></td><td>\d{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?(?![-\d])</td>
 	</tr>
 	<tr>
 		<td><b>EMAIL</b></td><td>[A-Za-z0-9_.+-]+@[A-Za-z0-9-]+\.[A-Za-z0-9.-]+</td>
