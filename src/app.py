@@ -4,9 +4,9 @@ Usage:
     streamlit run src/app.py
 """
 
-import streamlit as st
+import streamlit as st 
 
-from parser import PROJECT_ROOT
+from parser import PROJECT_ROOT 
 from pipeline import run_pipeline
 from profiles import PROFILE_NAMES, PROFILES
 from validator import get_validating_metamodel
